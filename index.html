@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Creator Profile</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:#fafafa;
+}
+
+.header{
+background:white;
+padding:15px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+border-bottom:1px solid #ddd;
+}
+
+.logo{
+font-size:20px;
+font-weight:bold;
+}
+
+.container{
+max-width:600px;
+margin:auto;
+background:white;
+}
+
+.profile-top{
+display:flex;
+padding:20px;
+}
+
+.avatar{
+width:90px;
+height:90px;
+border-radius:50%;
+background:#eee;
+margin-right:20px;
+}
+
+.stats{
+display:flex;
+gap:20px;
+margin-top:10px;
+}
+
+.bio{
+padding:0 20px 20px;
+}
+
+.buttons{
+display:flex;
+gap:10px;
+padding:0 20px 20px;
+}
+
+button{
+padding:8px 15px;
+border:1px solid #ccc;
+background:white;
+border-radius:6px;
+cursor:pointer;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:2px;
+}
+
+.post{
+background:#ddd;
+height:120px;
+}
+
+.footer{
+position:fixed;
+bottom:0;
+width:100%;
+background:white;
+border-top:1px solid #ddd;
+display:flex;
+justify-content:space-around;
+padding:10px;
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="header">
+<div class="logo">Creator</div>
+<button onclick="logout()">Logout</button>
+</div>
+
+<div class="container">
+
+<div class="profile-top">
+
+<img id="avatar" class="avatar" src="https://via.placeholder.com/90">
+
+<div>
+
+<h3 id="shopname">Shop Name</h3>
+
+<div class="stats">
+<div><b id="posts">0</b><br>posts</div>
+<div><b>0</b><br>followers</div>
+<div><b>0</b><br>following</div>
+</div>
+
+</div>
+
+</div>
+
+<div class="bio">
+
+<b id="name">Creator</b>
+
+<p id="bio">bio here</p>
+
+<a id="website" href="#" target="_blank"></a>
+
+</div>
+
+<div class="buttons">
+
+<button onclick="editProfile()">Edit Profile</button>
+
+<button onclick="uploadPost()">Upload</button>
+
+<button onclick="share()">Share</button>
+
+</div>
+
+<div class="grid" id="postGrid">
+
+</div>
+
+</div>
+
+<div class="footer">
+
+<div>🏠</div>
+<div>🔍</div>
+<div onclick="uploadPost()">➕</div>
+<div>❤️</div>
+<div>👤</div>
+
+</div>
+
+
+<!-- Firebase -->
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+
+<script>
+
+const firebaseConfig = {
+
+apiKey: "YOUR_API_KEY",
+
+authDomain: "YOUR_PROJECT.firebaseapp.com",
+
+projectId: "YOUR_PROJECT",
+
+appId: "APP_ID"
+
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+
+</script>
+
+
+<script>
+
+const API="https://script.google.com/macros/s/AKfycbxJVZqW9tPedLvSpYNoVWMy5HF43mlsZCpRoswdcXheYk5BnTY_1FhHzV49DWzJm1v8LQ/exec";
+
+
+auth.onAuthStateChanged(user=>{
+
+if(user){
+
+loadProfile(user.uid)
+
+}else{
+
+location.href="login.html"
+
+}
+
+})
+
+
+
+function loadProfile(uid){
+
+fetch(API)
+
+.then(r=>r.json())
+
+.then(data=>{
+
+data.forEach(row=>{
+
+if(row[0]==uid){
+
+document.getElementById("shopname").innerText=row[3]
+
+}
+
+})
+
+})
+
+}
+
+
+
+function editProfile(){
+
+alert("Edit Profile Page")
+
+}
+
+
+
+function uploadPost(){
+
+alert("Upload system here")
+
+}
+
+
+
+function share(){
+
+navigator.share({
+
+title:"My Profile",
+
+url:location.href
+
+})
+
+}
+
+
+
+function logout(){
+
+auth.signOut()
+
+location.reload()
+
+}
+
+
+
+</script>
+
+</body>
+</html>
