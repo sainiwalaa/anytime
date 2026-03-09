@@ -23,35 +23,20 @@ margin:auto;
 background:white;
 }
 
-.profile-top{
-display:flex;
+.profile{
 padding:20px;
+text-align:center;
 }
 
 .avatar{
 width:90px;
 height:90px;
 border-radius:50%;
-object-fit:cover;
-margin-right:20px;
-}
-
-.stats{
-display:flex;
-gap:20px;
-margin-top:10px;
-}
-
-.bio{padding:0 20px 20px}
-
-.buttons{
-display:flex;
-gap:10px;
-padding:0 20px 20px;
 }
 
 button{
-padding:8px 15px;
+padding:10px 15px;
+margin:5px;
 border:1px solid #ccc;
 background:white;
 border-radius:6px;
@@ -65,21 +50,9 @@ gap:2px;
 }
 
 .post{
-background:#ddd;
 height:120px;
 background-size:cover;
 background-position:center;
-}
-
-.footer{
-position:fixed;
-bottom:0;
-width:100%;
-background:white;
-border-top:1px solid #ddd;
-display:flex;
-justify-content:space-around;
-padding:10px;
 }
 
 </style>
@@ -94,35 +67,15 @@ padding:10px;
 
 <div class="container">
 
-<div class="profile-top">
+<div class="profile">
 
 <img id="avatar" class="avatar" src="https://via.placeholder.com/90">
 
-<div>
+<h3 id="name">Creator</h3>
 
-<h3 id="shopname">Creator</h3>
+<button onclick="login()">Login</button>
 
-<div class="stats">
-<div><b id="posts">0</b><br>posts</div>
-<div><b>0</b><br>followers</div>
-<div><b>0</b><br>following</div>
-</div>
-
-</div>
-</div>
-
-<div class="bio">
-
-<b id="name">Creator</b>
-<p id="bio">Welcome</p>
-
-</div>
-
-<div class="buttons">
-
-<button onclick="editProfile()">Edit</button>
 <button onclick="uploadPost()">Upload</button>
-<button onclick="share()">Share</button>
 
 </div>
 
@@ -130,15 +83,7 @@ padding:10px;
 
 </div>
 
-<div class="footer">
-<div>🏠</div>
-<div>🔍</div>
-<div onclick="uploadPost()">➕</div>
-<div>❤️</div>
-<div>👤</div>
-</div>
-
-<input type="file" id="fileInput" accept="image/*,video/*" style="display:none">
+<input type="file" id="fileInput" style="display:none">
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -155,8 +100,7 @@ databaseURL: "https://sainiwalaainfulencer-default-rtdb.firebaseio.com",
 projectId: "sainiwalaainfulencer",
 storageBucket: "sainiwalaainfulencer.firebasestorage.app",
 messagingSenderId: "116125275008",
-appId: "1:116125275008:web:dc09ab0c6ce0317436e765",
-measurementId: "G-VCKE3S9S14"
+appId: "1:116125275008:web:dc09ab0c6ce0317436e765"
 
 };
 
@@ -166,48 +110,27 @@ const auth=firebase.auth();
 const storage=firebase.storage();
 const db=firebase.database();
 
-const API="https://script.google.com/macros/s/AKfycbxJVZqW9tPedLvSpYNoVWMy5HF43mlsZCpRoswdcXheYk5BnTY_1FhHzV49DWzJm1v8LQ/exec";
+function login(){
+
+const provider=new firebase.auth.GoogleAuthProvider()
+
+auth.signInWithPopup(provider)
+
+}
 
 auth.onAuthStateChanged(user=>{
 
 if(user){
 
-loadProfile(user.uid)
+document.getElementById("name").innerText=user.displayName
+
+document.getElementById("avatar").src=user.photoURL
+
 loadPosts()
 
-}else{
-
-alert("Login required")
-
 }
 
 })
-
-
-function loadProfile(uid){
-
-fetch(API)
-
-.then(res=>res.json())
-
-.then(data=>{
-
-data.forEach(row=>{
-
-if(row[0]==uid){
-
-document.getElementById("shopname").innerText=row[3]
-document.getElementById("name").innerText=row[3]
-document.getElementById("bio").innerText=row[9]||"Welcome"
-
-}
-
-})
-
-})
-
-}
-
 
 function uploadPost(){
 
@@ -215,15 +138,15 @@ document.getElementById("fileInput").click()
 
 }
 
-
 document.getElementById("fileInput").addEventListener("change",function(){
 
 const file=this.files[0]
-const user=firebase.auth().currentUser
 
-if(!file || !user)return
+const user=auth.currentUser
 
-const ref=storage.ref("posts/"+user.uid+"/"+Date.now()+"_"+file.name)
+if(!file||!user)return
+
+const ref=storage.ref("posts/"+user.uid+"/"+Date.now())
 
 ref.put(file).then(s=>{
 
@@ -234,8 +157,7 @@ const id=Date.now()
 db.ref("posts/"+id).set({
 
 uid:user.uid,
-media:url,
-time:id
+media:url
 
 })
 
@@ -246,7 +168,6 @@ showPost(url)
 })
 
 })
-
 
 function showPost(url){
 
@@ -260,10 +181,7 @@ post.style.backgroundImage="url("+url+")"
 
 grid.prepend(post)
 
-document.getElementById("posts").innerText=grid.children.length
-
 }
-
 
 function loadPosts(){
 
@@ -283,34 +201,9 @@ showPost(p.val().media)
 
 }
 
-
-function editProfile(){
-
-alert("Edit profile page")
-
-}
-
-
-function share(){
-
-if(navigator.share){
-
-navigator.share({
-
-title:"My Creator Profile",
-url:location.href
-
-})
-
-}
-
-}
-
-
 function logout(){
 
 auth.signOut()
-location.reload()
 
 }
 
