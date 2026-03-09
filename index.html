@@ -2,8 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Creator Profile</title>
-
+<title>Sainiwalaa Creator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -18,14 +17,8 @@ background:#fafafa;
 background:white;
 padding:15px;
 display:flex;
-align-items:center;
 justify-content:space-between;
 border-bottom:1px solid #ddd;
-}
-
-.logo{
-font-size:20px;
-font-weight:bold;
 }
 
 .container{
@@ -43,7 +36,7 @@ padding:20px;
 width:90px;
 height:90px;
 border-radius:50%;
-background:#eee;
+object-fit:cover;
 margin-right:20px;
 }
 
@@ -80,6 +73,8 @@ gap:2px;
 .post{
 background:#ddd;
 height:120px;
+background-size:cover;
+background-position:center;
 }
 
 .footer{
@@ -94,12 +89,12 @@ padding:10px;
 }
 
 </style>
-
 </head>
+
 <body>
 
 <div class="header">
-<div class="logo">Creator</div>
+<b>Sainiwalaa</b>
 <button onclick="logout()">Logout</button>
 </div>
 
@@ -111,7 +106,7 @@ padding:10px;
 
 <div>
 
-<h3 id="shopname">Shop Name</h3>
+<h3 id="shopname">Creator</h3>
 
 <div class="stats">
 <div><b id="posts">0</b><br>posts</div>
@@ -127,15 +122,13 @@ padding:10px;
 
 <b id="name">Creator</b>
 
-<p id="bio">bio here</p>
-
-<a id="website" href="#" target="_blank"></a>
+<p id="bio">Welcome</p>
 
 </div>
 
 <div class="buttons">
 
-<button onclick="editProfile()">Edit Profile</button>
+<button onclick="editProfile()">Edit</button>
 
 <button onclick="uploadPost()">Upload</button>
 
@@ -143,39 +136,36 @@ padding:10px;
 
 </div>
 
-<div class="grid" id="postGrid">
-
-</div>
+<div class="grid" id="postGrid"></div>
 
 </div>
 
 <div class="footer">
-
 <div>🏠</div>
 <div>🔍</div>
 <div onclick="uploadPost()">➕</div>
 <div>❤️</div>
 <div>👤</div>
-
 </div>
 
 
-<!-- Firebase -->
+<!-- Firebase CDN -->
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
 <script>
 
 const firebaseConfig = {
 
-apiKey: "YOUR_API_KEY",
-
-authDomain: "YOUR_PROJECT.firebaseapp.com",
-
-projectId: "YOUR_PROJECT",
-
-appId: "APP_ID"
+apiKey: "AIzaSyCm-5fJ49MxP0MFT8dDIkptue15x_GaaYc",
+authDomain: "sainiwalaainfulencer.firebaseapp.com",
+databaseURL: "https://sainiwalaainfulencer-default-rtdb.firebaseio.com",
+projectId: "sainiwalaainfulencer",
+storageBucket: "sainiwalaainfulencer.firebasestorage.app",
+messagingSenderId: "116125275008",
+appId: "1:116125275008:web:dc09ab0c6ce0317436e765",
+measurementId: "G-VCKE3S9S14"
 
 };
 
@@ -199,19 +189,18 @@ loadProfile(user.uid)
 
 }else{
 
-location.href="login.html"
+alert("Login required")
 
 }
 
 })
 
 
-
 function loadProfile(uid){
 
 fetch(API)
 
-.then(r=>r.json())
+.then(res=>res.json())
 
 .then(data=>{
 
@@ -220,6 +209,8 @@ data.forEach(row=>{
 if(row[0]==uid){
 
 document.getElementById("shopname").innerText=row[3]
+document.getElementById("name").innerText=row[3]
+document.getElementById("bio").innerText=row[9] || "Welcome"
 
 }
 
@@ -229,29 +220,51 @@ document.getElementById("shopname").innerText=row[3]
 
 }
 
+
+function loadPosts(){
+
+const grid=document.getElementById("postGrid")
+
+for(let i=0;i<9;i++){
+
+const post=document.createElement("div")
+
+post.className="post"
+
+post.style.backgroundImage="url(https://picsum.photos/300?random="+i+")"
+
+grid.appendChild(post)
+
+}
+
+document.getElementById("posts").innerText=9
+
+}
+
+loadPosts()
 
 
 function editProfile(){
 
-alert("Edit Profile Page")
+alert("Edit profile page")
 
 }
-
 
 
 function uploadPost(){
 
-alert("Upload system here")
+alert("Upload post system")
 
 }
 
 
-
 function share(){
+
+if(navigator.share){
 
 navigator.share({
 
-title:"My Profile",
+title:"My Creator Profile",
 
 url:location.href
 
@@ -259,6 +272,7 @@ url:location.href
 
 }
 
+}
 
 
 function logout(){
@@ -268,8 +282,6 @@ auth.signOut()
 location.reload()
 
 }
-
-
 
 </script>
 
