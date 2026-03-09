@@ -9,11 +9,12 @@
 body{margin:0;font-family:Arial;background:#fafafa}
 .header{background:white;padding:15px;display:flex;justify-content:space-between;border-bottom:1px solid #ddd}
 .container{max-width:600px;margin:auto;background:white}
-.profile{text-align:center;padding:20px}
-.avatar{width:90px;height:90px;border-radius:50%}
+.profile{padding:20px;text-align:center}
+.avatar{width:90px;height:90px;border-radius:50%;object-fit:cover}
 button{padding:10px 15px;margin:5px;border:1px solid #ccc;background:white;border-radius:6px;cursor:pointer}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
 .post{height:120px;background-size:cover;background-position:center}
+.info{font-size:12px;color:#777;margin-top:10px}
 </style>
 </head>
 
@@ -21,19 +22,23 @@ button{padding:10px 15px;margin:5px;border:1px solid #ccc;background:white;borde
 
 <div class="header">
 <b>Sainiwalaa</b>
+<div>
+<button onclick="login()">Login</button>
 <button onclick="logout()">Logout</button>
+</div>
 </div>
 
 <div class="container">
 
 <div class="profile">
-
 <img id="avatar" class="avatar" src="https://via.placeholder.com/90">
-
 <h3 id="name">Creator</h3>
 
-<button onclick="login()">Login</button>
-<button onclick="uploadPost()">Upload</button>
+<button onclick="uploadPost()">Upload Post</button>
+
+<div class="info">
+<span id="uid"></span>
+</div>
 
 </div>
 
@@ -41,10 +46,9 @@ button{padding:10px 15px;margin:5px;border:1px solid #ccc;background:white;borde
 
 </div>
 
-<input type="file" id="fileInput" style="display:none">
+<input type="file" id="fileInput" accept="image/*,video/*" style="display:none">
 
-<!-- Firebase CDN COMPAT VERSION -->
-
+<!-- Firebase Compat SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
@@ -68,30 +72,45 @@ const auth = firebase.auth();
 const storage = firebase.storage();
 const db = firebase.database();
 
+/* Google Apps Script API */
+const API="https://script.google.com/macros/s/AKfycbxJVZqW9tPedLvSpYNoVWMy5HF43mlsZCpRoswdcXheYk5BnTY_1FhHzV49DWzJm1v8LQ/exec";
+
 function login(){
-
-const provider = new firebase.auth.GoogleAuthProvider();
+const provider=new firebase.auth.GoogleAuthProvider();
 auth.signInWithPopup(provider);
+}
 
+function logout(){
+auth.signOut();
 }
 
 auth.onAuthStateChanged(user=>{
-
 if(user){
 
 document.getElementById("name").innerText=user.displayName;
 document.getElementById("avatar").src=user.photoURL;
+document.getElementById("uid").innerText="UID: "+user.uid;
 
+loadProfile(user.uid);
 loadPosts();
 
 }
-
 });
 
+function loadProfile(uid){
+fetch(API)
+.then(r=>r.json())
+.then(data=>{
+data.forEach(row=>{
+if(row[0]==uid){
+document.getElementById("name").innerText=row[3] || "Creator";
+}
+})
+})
+}
+
 function uploadPost(){
-
 document.getElementById("fileInput").click();
-
 }
 
 document.getElementById("fileInput").addEventListener("change",function(){
@@ -99,7 +118,7 @@ document.getElementById("fileInput").addEventListener("change",function(){
 const file=this.files[0];
 const user=auth.currentUser;
 
-if(!file || !user)return;
+if(!file||!user)return;
 
 const ref=storage.ref("posts/"+user.uid+"/"+Date.now());
 
@@ -129,6 +148,7 @@ const grid=document.getElementById("postGrid");
 const post=document.createElement("div");
 
 post.className="post";
+
 post.style.backgroundImage="url("+url+")";
 
 grid.prepend(post);
@@ -144,18 +164,10 @@ const grid=document.getElementById("postGrid");
 grid.innerHTML="";
 
 snap.forEach(p=>{
-
 showPost(p.val().media);
-
 });
 
 });
-
-}
-
-function logout(){
-
-auth.signOut();
 
 }
 
