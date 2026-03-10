@@ -2,23 +2,20 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<title>Sainiwalaa Creator & Public Feed</title>
+<title>Sainiwalaa Creator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <style>
 body{margin:0;font-family:Arial;background:#fafafa}
-.header{background:white;padding:15px;display:flex;justify-content:space-between;border-bottom:1px solid #ddd;align-items:center}
-.header b{font-size:18px}
-.container{max-width:600px;margin:auto;background:white;padding-bottom:50px}
+.header{background:white;padding:15px;display:flex;justify-content:space-between;border-bottom:1px solid #ddd}
+.container{max-width:700px;margin:auto;background:white;padding:15px}
 .profile{padding:20px;text-align:center}
 .avatar{width:90px;height:90px;border-radius:50%;object-fit:cover}
-button{padding:10px 15px;margin:5px;border:1px solid #ccc;background:white;border-radius:6px;cursor:pointer}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-bottom:30px}
-.post{height:120px;background-size:cover;background-position:center;position:relative;cursor:pointer}
-.post span{position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,0.5);color:white;font-size:10px;padding:1px 3px;border-radius:3px}
-.info{font-size:12px;color:#777;margin-top:10px;text-align:center}
-.nav{display:flex;justify-content:center;gap:10px;margin:10px 0}
-.nav button{font-size:12px;padding:5px 10px}
+button,input,select,textarea{padding:8px;margin:5px;border:1px solid #ccc;border-radius:6px;width:100%}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:20px}
+.post{height:150px;background-size:cover;background-position:center;position:relative}
+.post-overlay{position:absolute;bottom:0;background:rgba(0,0,0,0.5);color:white;width:100%;font-size:12px;padding:2px;text-align:center}
+.info{font-size:12px;color:#777;margin-top:10px}
+.form-section{margin-top:20px;background:#f9f9f9;padding:10px;border-radius:8px}
 </style>
 </head>
 <body>
@@ -31,38 +28,43 @@ button{padding:10px 15px;margin:5px;border:1px solid #ccc;background:white;borde
 </div>
 </div>
 
-<div class="nav">
-<button onclick="showCreator()">Creator Dashboard</button>
-<button onclick="showPublicFeed()">Public Feed</button>
+<div class="container">
+<div class="profile">
+<img id="avatar" class="avatar" src="https://via.placeholder.com/90">
+<h3 id="name">Creator</h3>
+<div class="info"><span id="uid"></span></div>
 </div>
 
-<div class="container" id="creatorSection">
-  <div class="profile">
-    <img id="avatar" class="avatar" src="https://via.placeholder.com/90">
-    <h3 id="name">Creator</h3>
-    <button onclick="uploadPost()">Upload Post</button>
-    <div class="info">
-      <span id="uid"></span>
-    </div>
-  </div>
-  <div class="grid" id="postGrid"></div>
+<div class="form-section" id="postForm" style="display:none">
+<h4>Upload Product / Video</h4>
+<input type="text" id="shopName" placeholder="Shop Name" readonly>
+<input type="file" id="fileInput" accept="image/*,video/*">
+<input type="text" id="videoLink" placeholder="Or Embed Video Link">
+<input type="number" id="price" placeholder="Product Price">
+<select id="platform">
+  <option value="">Select Platform</option>
+  <option value="Amazon">Amazon</option>
+  <option value="Meesho">Meesho</option>
+  <option value="Other">Other</option>
+</select>
+<textarea id="description" placeholder="Description"></textarea>
+<input type="text" id="productLink" placeholder="Product Link">
+<label><input type="checkbox" id="influenceContact"> Influence Contact Yes/No</label>
+<button onclick="savePost()">Save Post</button>
 </div>
 
-<div class="container" id="publicFeed" style="display:none">
-  <h3 style="text-align:center">Public Feed</h3>
-  <div class="grid" id="publicGrid"></div>
+<h4>Public Feed</h4>
+<div class="grid" id="postGrid"></div>
 </div>
 
-<input type="file" id="fileInput" accept="image/*,video/*" style="display:none">
-
-<!-- Firebase JS SDK -->
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-// Firebase config
+// Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyCm-5fJ49MxP0MFT8dDIkptue15x_GaaYc",
   authDomain: "sainiwalaainfulencer.firebaseapp.com",
@@ -72,101 +74,105 @@ const firebaseConfig = {
   messagingSenderId: "116125275008",
   appId: "1:116125275008:web:dc09ab0c6ce0317436e765"
 };
-firebase.initializeApp(firebaseConfig);
 
+firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const storage = firebase.storage();
 const db = firebase.database();
 
-// Google Apps Script API for Sheet sync
-const API="https://script.google.com/macros/s/AKfycbxSg4X4HYjUoX9rfmnjU9lBUyv0aKtJB_pAp0K9z3A5NMHrhASg3aTNz-H3JnOa1twurA/exec";
+// Google Sheet API
+const SHEET_API = "https://script.google.com/macros/s/AKfycbxSg4X4HYjUoX9rfmnjU9lBUyv0aKtJB_pAp0K9z3A5NMHrhASg3aTNz-H3JnOa1twurA/exec";
 
-// --- Login/Logout ---
+// Auth
 function login(){ auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
 function logout(){ auth.signOut(); }
 
-// --- Sections Toggle ---
-function showCreator(){ document.getElementById("creatorSection").style.display="block"; document.getElementById("publicFeed").style.display="none"; }
-function showPublicFeed(){ document.getElementById("creatorSection").style.display="none"; document.getElementById("publicFeed").style.display="block"; }
-
-// --- Auth listener ---
+// Auth listener
 auth.onAuthStateChanged(user=>{
   if(user){
     document.getElementById("name").innerText=user.displayName;
     document.getElementById("avatar").src=user.photoURL;
     document.getElementById("uid").innerText="UID: "+user.uid;
-    loadProfile(user.uid);
-    loadCreatorPosts(user.uid);
-    loadPublicFeed();
+    document.getElementById("postForm").style.display="block";
+    loadShopName(user.uid);
   } else {
     document.getElementById("name").innerText="Creator";
     document.getElementById("avatar").src="https://via.placeholder.com/90";
     document.getElementById("uid").innerText="";
-    document.getElementById("postGrid").innerHTML="";
-    document.getElementById("publicGrid").innerHTML="";
+    document.getElementById("postForm").style.display="none";
   }
 });
 
-// --- Load user profile from Sheet API ---
-function loadProfile(uid){
-  fetch(API).then(r=>r.json()).then(data=>{
-    data.forEach(row=>{
-      if(row[0]==uid) document.getElementById("name").innerText=row[3]||"Creator";
-    })
+// Load shop name from Sheet
+function loadShopName(uid){
+  fetch(SHEET_API)
+  .then(r=>r.json())
+  .then(data=>{
+    const row = data.find(r=>r[0]==uid);
+    if(row) document.getElementById("shopName").value=row[1];
   });
 }
 
-// --- Upload post ---
-function uploadPost(){ document.getElementById("fileInput").click(); }
-document.getElementById("fileInput").addEventListener("change",function(){
-  const file=this.files[0], user=auth.currentUser;
+// Upload + save
+document.getElementById("fileInput").addEventListener("change", function(){
+  const file=this.files[0]; const user=auth.currentUser;
   if(!file||!user) return;
-
   const ref=storage.ref("posts/"+user.uid+"/"+Date.now());
   ref.put(file).then(s=>{
     s.ref.getDownloadURL().then(url=>{
-      const id=Date.now();
-      const postData={
-        uid:user.uid,
-        media:url,
-        timestamp:new Date().toISOString()
-      };
-      db.ref("posts/"+id).set(postData);
-      showPost(url,true); // show in creator
-      showPost(url,false); // show in public feed
+      document.getElementById("videoLink").value=url;
+      alert("Video Uploaded Successfully!");
     });
   });
 });
 
-// --- Show post ---
-function showPost(url,isCreator=true){
-  const grid=isCreator?document.getElementById("postGrid"):document.getElementById("publicGrid");
-  const post=document.createElement("div");
-  post.className="post";
-  post.style.backgroundImage="url("+url+")";
-  if(!isCreator) post.title="Public Post";
-  grid.prepend(post);
+// Save Post
+function savePost(){
+  const user=auth.currentUser;
+  if(!user) return alert("Login First!");
+  const post={
+    uid: user.uid,
+    shopName: document.getElementById("shopName").value,
+    videoLink: document.getElementById("videoLink").value,
+    price: document.getElementById("price").value,
+    platform: document.getElementById("platform").value,
+    description: document.getElementById("description").value,
+    productLink: document.getElementById("productLink").value,
+    influenceContact: document.getElementById("influenceContact").checked?"Yes":"No",
+    timestamp: new Date().toISOString()
+  };
+  
+  // Save to Firebase Realtime DB
+  const id=Date.now();
+  db.ref("posts/"+id).set(post);
+
+  // Optional: Save to Google Sheet API
+  fetch(SHEET_API+"?action=addPost",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(post)
+  });
+
+  alert("Post Saved Successfully!");
+  showPost(post);
 }
 
-// --- Load creator posts ---
-function loadCreatorPosts(uid){
-  db.ref("posts").orderByChild("uid").equalTo(uid).on("value",snap=>{
-    const grid=document.getElementById("postGrid");
-    grid.innerHTML="";
-    snap.forEach(p=> showPost(p.val().media,true));
-  });
+// Show post in grid
+function showPost(post){
+  const grid=document.getElementById("postGrid");
+  const div=document.createElement("div"); div.className="post";
+  div.style.backgroundImage="url("+post.videoLink+")";
+  const overlay=document.createElement("div"); overlay.className="post-overlay";
+  overlay.innerText=post.shopName+" | ₹"+post.price;
+  div.appendChild(overlay);
+  grid.prepend(div);
 }
 
-// --- Load public feed ---
-function loadPublicFeed(){
-  db.ref("posts").orderByChild("timestamp").limitToLast(10).on("value",snap=>{
-    const grid=document.getElementById("publicGrid");
-    grid.innerHTML="";
-    let arr=[];
-    snap.forEach(p=>arr.push(p.val().media));
-    arr.reverse().forEach(url=>showPost(url,false));
-  });
-}
+// Load all posts (public feed)
+db.ref("posts").on("value", snap=>{
+  const grid=document.getElementById("postGrid"); grid.innerHTML="";
+  snap.forEach(p=>showPost(p.val()));
+});
 </script>
 </body>
 </html>
