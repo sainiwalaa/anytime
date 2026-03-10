@@ -7,20 +7,27 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; overflow-x: hidden; }
+        body { background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; overflow-x: hidden; }
         .ig-input { background: #121212; border: 1px solid #363636; padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 12px; color: #fff; outline: none; font-size: 14px; }
         .modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 95%; background: #121212; z-index: 1000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 20px 20px 0 0; padding: 20px; overflow-y: auto; }
         .modal.active { bottom: 0; }
-        .tab-btn { flex: 1; text-align: center; padding: 12px; border-bottom: 2px solid transparent; opacity: 0.5; cursor: pointer; }
-        .tab-btn.active { border-bottom-color: #fff; opacity: 1; }
-        #loader { height: 3px; background: #0095f6; width: 0%; position: fixed; top: 0; left: 0; z-index: 9999; transition: 0.3s; }
-        .delete-btn { position: absolute; top: 5px; right: 5px; background: rgba(255,0,0,0.7); color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; z-index: 10; }
         
-        /* Profile Styling */
-        .profile-banner { height: 160px; border-radius: 0 0 20px 20px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: bold; font-size: 24px; transition: 0.5s; }
-        .profile-pic-container { position: relative; width: 90px; height: 90px; margin-top: -45px; margin-left: 20px; z-index: 10; }
-        .profile-pic { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #000; background: #222; object-fit: cover; }
-        .edit-pic-btn { position: absolute; bottom: 0; right: 0; background: #0095f6; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid #000; }
+        /* New Tab System Styling */
+        .tab-btn { flex: 1; text-align: center; padding: 15px; border-bottom: 2px solid transparent; color: #8e8e8e; transition: 0.3s; cursor: pointer; }
+        .tab-btn.active { border-bottom-color: #fff; color: #fff; }
+        
+        #loader { height: 3px; background: #0095f6; width: 0%; position: fixed; top: 0; left: 0; z-index: 9999; transition: 0.3s; }
+        .delete-btn { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.6); color: white; padding: 4px; border-radius: 4px; font-size: 12px; z-index: 10; border: 1px solid rgba(255,255,255,0.2); }
+        
+        /* Profile UI Look */
+        .profile-banner { height: 140px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: linear-gradient(45deg, #121212, #252525); }
+        .profile-pic-container { position: relative; width: 85px; height: 85px; margin-top: -42px; margin-left: 15px; z-index: 10; }
+        .profile-pic { width: 100%; height: 100%; border-radius: 50%; border: 3px solid #000; background: #222; object-fit: cover; }
+        .edit-pic-btn { position: absolute; bottom: 0; right: 0; background: #0095f6; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid #000; }
+        
+        .stat-box { text-align: center; flex: 1; }
+        .stat-num { font-weight: bold; font-size: 18px; display: block; }
+        .stat-label { font-size: 12px; color: #8e8e8e; }
     </style>
 </head>
 <body>
@@ -35,128 +42,120 @@
     </div>
 
     <div id="app" class="hidden">
-        <header class="p-4 flex justify-between items-center border-b border-zinc-900 sticky top-0 bg-black z-50">
-            <span class="font-bold text-lg" id="shop-label-header">Shop Name</span>
-            <div class="flex gap-4">
-                <i class="fa-regular fa-square-plus text-2xl cursor-pointer" onclick="openModal('upload-modal')"></i>
-                <i class="fa-solid fa-power-off text-red-500 text-xl cursor-pointer" onclick="logout()"></i>
+        <header class="p-4 flex justify-between items-center sticky top-0 bg-black z-50">
+            <span class="font-bold text-xl tracking-tight" id="shop-label-header">Studio</span>
+            <div class="flex gap-5 items-center">
+                <i class="fa-regular fa-square-plus text-2xl" onclick="openModal('upload-modal')"></i>
+                <i class="fa-solid fa-arrow-right-from-bracket text-xl text-zinc-500" onclick="logout()"></i>
             </div>
         </header>
 
-        <div class="flex border-b border-zinc-900 sticky top-[60px] bg-black z-40">
+        <div id="profile-header-section">
+            <div id="p-banner" class="profile-banner">
+                <span id="p-banner-text" class="px-4">Welcome</span>
+                <img id="p-banner-img" src="" class="absolute inset-0 w-full h-full object-cover hidden">
+            </div>
+            
+            <div class="flex items-start px-4">
+                <div class="profile-pic-container">
+                    <img id="p-user-img" src="" class="profile-pic">
+                    <label for="edit-pic-file" class="edit-pic-btn cursor-pointer">
+                        <i class="fa-solid fa-plus"></i>
+                    </label>
+                    <input type="file" id="edit-pic-file" class="hidden" accept="image/*" onchange="handleFileUpload(this, 'p-user-img', true)"/>
+                </div>
+                
+                <div class="flex flex-1 pt-2 px-4 justify-around items-center">
+                    <div class="stat-box">
+                        <span class="stat-num" id="post-count">0</span>
+                        <span class="stat-label">Posts</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-num">0</span>
+                        <span class="stat-label">Orders</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-num">1</span>
+                        <span class="stat-label">Studio</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-4 mt-2">
+                <h2 id="p-name" class="font-bold text-sm">---</h2>
+                <p id="p-bio" class="text-sm text-zinc-300">Bio goes here...</p>
+                <div id="p-location" class="text-xs text-zinc-500 mt-1"><i class="fa-solid fa-location-dot"></i> <span>City</span></div>
+            </div>
+        </div>
+
+        <div class="flex border-b border-zinc-900 mt-6 sticky top-[60px] bg-black z-40">
             <div id="tab-feed" class="tab-btn active" onclick="switchTab('feed')"><i class="fa-solid fa-table-cells text-xl"></i></div>
             <div id="tab-orders" class="tab-btn" onclick="switchTab('orders')"><i class="fa-solid fa-cart-shopping text-xl"></i></div>
-            <div id="tab-profile" class="tab-btn" onclick="switchTab('profile')"><i class="fa-regular fa-user text-xl"></i></div>
+            <div id="tab-settings" class="tab-btn" onclick="switchTab('settings')"><i class="fa-solid fa-gear text-xl"></i></div>
         </div>
 
         <div id="section-feed" class="grid grid-cols-3 gap-0.5 pb-20"></div>
 
-        <div id="section-orders" class="hidden p-4 pb-20 text-center">
-            <h3 class="text-zinc-500 mt-10">No Orders Found</h3>
+        <div id="section-orders" class="hidden p-8 pb-20 text-center">
+            <div class="opacity-30 mb-4"><i class="fa-solid fa-box-open text-6xl"></i></div>
+            <h3 class="text-zinc-500">No Orders Yet</h3>
+            <p class="text-xs text-zinc-600 mt-2">When clients buy your products, they will appear here.</p>
         </div>
 
-        <div id="section-profile" class="hidden pb-20">
-            <div id="p-banner" class="profile-banner bg-zinc-800">
-                <span id="p-banner-text">Welcome to my Shop</span>
-                <img id="p-banner-img" src="" class="absolute inset-0 w-full h-full object-cover hidden">
+        <div id="section-settings" class="hidden p-4 pb-20">
+            <div class="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800 space-y-4">
+                <h3 class="font-bold text-blue-500 mb-4">Studio Settings</h3>
+                
+                <div>
+                    <label class="text-[10px] text-zinc-500 uppercase ml-1">Shop Display Name</label>
+                    <input id="edit-shopName" class="ig-input" placeholder="Shop Name"/>
+                </div>
+
+                <div>
+                    <label class="text-[10px] text-zinc-500 uppercase ml-1">About / Bio</label>
+                    <textarea id="edit-bio" class="ig-input h-20" placeholder="Write something about your studio..."></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <input id="edit-contact" class="ig-input" placeholder="WhatsApp Number"/>
+                    <input id="edit-city" class="ig-input" placeholder="City"/>
+                </div>
+
+                <div class="border-t border-zinc-800 pt-4">
+                    <p class="text-[10px] text-zinc-500 uppercase mb-2">Banner Customization</p>
+                    <input id="edit-banner-text" class="ig-input" placeholder="Banner Heading Text"/>
+                    <div class="flex gap-3">
+                        <input type="color" id="edit-banner-bg" class="w-full h-10 bg-zinc-800 border-none rounded" value="#1e1e1e"/>
+                        <input type="color" id="edit-banner-color" class="w-full h-10 bg-zinc-800 border-none rounded" value="#ffffff"/>
+                    </div>
+                </div>
+
+                <button onclick="updateProfile()" id="update-btn" class="w-full bg-blue-600 font-bold py-3 rounded-lg mt-4">Save All Changes</button>
             </div>
             
-            <div class="profile-pic-container">
-                <img id="p-user-img" src="https://via.placeholder.com/150" class="profile-pic">
-                <label for="edit-pic-file" class="edit-pic-btn cursor-pointer">
-                    <i class="fa-solid fa-camera"></i>
-                </label>
-                <input type="file" id="edit-pic-file" class="hidden" accept="image/*" onchange="handleFileUpload(this, 'p-user-img', true)"/>
+            <div class="mt-4 p-4 text-[10px] text-zinc-600 bg-zinc-950 rounded-lg">
+                <p>UID: <span id="p-uid">---</span></p>
+                <p>Account Created: <span id="p-createdAt">---</span></p>
             </div>
-
-            <div class="p-4 pt-2">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <h2 id="p-name" class="text-2xl font-bold">---</h2>
-                        <p id="p-email" class="text-xs text-zinc-500">---</p>
-                    </div>
-                    <button onclick="openModal('edit-profile-modal')" class="bg-white text-black px-4 py-1.5 rounded-full text-sm font-bold">Edit Profile</button>
-                </div>
-
-                <p id="p-bio" class="text-sm text-zinc-300 mb-4 italic">No bio added yet.</p>
-
-                <div class="grid grid-cols-2 gap-3 mb-6">
-                    <div class="bg-zinc-900 p-3 rounded-xl border border-zinc-800">
-                        <p class="text-[10px] text-zinc-500 uppercase">Shop Name</p>
-                        <p id="p-shopName" class="text-sm font-bold">---</p>
-                    </div>
-                    <div class="bg-zinc-900 p-3 rounded-xl border border-zinc-800">
-                        <p class="text-[10px] text-zinc-500 uppercase">City</p>
-                        <p id="p-city" class="text-sm font-bold">---</p>
-                    </div>
-                </div>
-
-                <div class="space-y-2 border-t border-zinc-900 pt-4">
-                    <div id="p-social-1" class="flex items-center gap-3 text-sm opacity-70"><i class="fa-brands fa-instagram"></i> Instagram Not Linked</div>
-                    <div id="p-social-2" class="flex items-center gap-3 text-sm opacity-70"><i class="fa-brands fa-youtube"></i> YouTube Not Linked</div>
-                </div>
-
-                <div class="mt-8 p-4 bg-zinc-900/50 rounded-xl border border-dashed border-zinc-800">
-                     <p class="text-xs text-zinc-500">UID: <span id="p-uid" class="select-all">---</span></p>
-                     <p class="text-xs text-zinc-500">Joined: <span id="p-createdAt">---</span></p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="edit-profile-modal" class="modal">
-        <div class="flex justify-between items-center mb-6">
-            <span onclick="closeModal('edit-profile-modal')" class="text-zinc-400 cursor-pointer">Back</span>
-            <b class="text-lg">Customize Studio</b>
-            <button onclick="updateProfile()" id="update-btn" class="text-blue-500 font-bold">Save</button>
-        </div>
-        
-        <div class="space-y-4">
-            <div class="p-4 bg-zinc-900 rounded-xl border border-zinc-800">
-                <p class="text-xs font-bold mb-3 text-zinc-400">BANNER DESIGN</p>
-                <input id="edit-banner-text" class="ig-input" placeholder="Banner Text (e.g. Best Deals Here)"/>
-                <div class="flex gap-2 mb-3">
-                    <input type="color" id="edit-banner-bg" class="w-12 h-10 bg-transparent" value="#1e1e1e"/>
-                    <input type="color" id="edit-banner-color" class="w-12 h-10 bg-transparent" value="#ffffff"/>
-                    <label class="flex-1 bg-zinc-800 flex items-center justify-center rounded-lg text-xs cursor-pointer">
-                        <i class="fa-solid fa-image mr-2"></i> Or Upload Image
-                        <input type="file" class="hidden" accept="image/*" onchange="handleFileUpload(this, 'temp-banner-url')"/>
-                    </label>
-                </div>
-                <input type="hidden" id="temp-banner-url"/>
-            </div>
-
-            <input id="edit-shopName" class="ig-input" placeholder="Shop Name"/>
-            <textarea id="edit-bio" class="ig-input h-16" placeholder="Bio"></textarea>
-            <div class="grid grid-cols-2 gap-2">
-                <input id="edit-contact" class="ig-input" placeholder="Contact No"/>
-                <input id="edit-city" class="ig-input" placeholder="City"/>
-            </div>
-            <input id="edit-social-1" class="ig-input" placeholder="Instagram Profile Link"/>
-            <input id="edit-social-2" class="ig-input" placeholder="YouTube Channel Link"/>
         </div>
     </div>
 
     <div id="upload-modal" class="modal">
         <div class="flex justify-between items-center mb-6">
-            <span onclick="closeModal('upload-modal')" class="text-zinc-400 cursor-pointer">Cancel</span>
+            <span onclick="closeModal('upload-modal')" class="text-zinc-400">Cancel</span>
             <b class="text-lg">New Post</b>
-            <button onclick="savePost()" id="post-btn" class="text-[#0095f6] font-bold">Post</button>
+            <button onclick="savePost()" id="post-btn" class="text-blue-500 font-bold">Share</button>
         </div>
-        <div class="space-y-2">
-            <div class="flex gap-2">
-                <div class="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-center">
-                    <input type="file" id="post-file" class="hidden" accept="image/*,video/*" onchange="handleFileUpload(this, 'post-videoUrl')"/>
-                    <label for="post-file" id="upload-label" class="cursor-pointer block">
-                        <i class="fa-solid fa-camera text-xl"></i>
-                        <p class="text-[10px]">Upload</p>
-                    </label>
-                </div>
-                <input id="post-videoUrl" class="flex-[2] ig-input mb-0" placeholder="Paste Media URL"/>
+        <div class="space-y-4">
+            <div class="bg-zinc-900 border-2 border-dashed border-zinc-700 rounded-xl p-8 text-center" onclick="document.getElementById('post-file').click()">
+                <input type="file" id="post-file" class="hidden" accept="image/*,video/*" onchange="handleFileUpload(this, 'post-videoUrl')"/>
+                <i class="fa-solid fa-cloud-arrow-up text-3xl text-zinc-500 mb-2"></i>
+                <p class="text-sm text-zinc-400" id="upload-status-text">Tap to select Image or Video</p>
+                <input type="hidden" id="post-videoUrl"/>
             </div>
-            <input id="post-productName" class="ig-input" placeholder="Product Name"/>
+            <input id="post-productName" class="ig-input" placeholder="What are you selling?"/>
             <input id="post-price" class="ig-input" placeholder="Price (₹)"/>
-            <input id="post-productLink" class="ig-input" placeholder="Product Link"/>
+            <input id="post-productLink" class="ig-input" placeholder="Product Link (Amazon/Flipkart)"/>
         </div>
     </div>
 
@@ -193,7 +192,7 @@
         });
 
         function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-        function logout() { if(confirm("Logout?")) auth.signOut(); }
+        function logout() { if(confirm("Logout from Studio?")) auth.signOut(); }
 
         function initUser(user) {
             const userRef = db.ref('users/' + user.uid);
@@ -204,120 +203,113 @@
                         uid: user.uid, name: user.displayName, email: user.email,
                         pic: user.photoURL, shopName: user.displayName.split(' ')[0] + " Studio",
                         createdAt: new Date().toLocaleDateString(),
-                        bannerBg: "#1e1e1e", bannerTextColor: "#ffffff"
+                        bannerBg: "#121212", bannerTextColor: "#ffffff", bio: "Welcome to my studio!"
                     });
                 } else {
-                    // UI Profile Sync
                     document.getElementById('p-name').innerText = data.name;
-                    document.getElementById('p-email').innerText = data.email;
                     document.getElementById('p-user-img').src = data.pic || user.photoURL;
                     document.getElementById('p-shopName').innerText = data.shopName;
                     document.getElementById('shop-label-header').innerText = data.shopName;
+                    document.getElementById('p-bio').innerText = data.bio;
+                    document.getElementById('p-location').querySelector('span').innerText = data.city || "Earth";
                     document.getElementById('p-uid').innerText = data.uid;
                     document.getElementById('p-createdAt').innerText = data.createdAt;
-                    document.getElementById('p-bio').innerText = data.bio || "Welcome to my studio!";
-                    document.getElementById('p-city').innerText = data.city || "Not Set";
                     
-                    // Banner Sync
+                    // Banner Logic
                     const banner = document.getElementById('p-banner');
-                    const bImg = document.getElementById('p-banner-img');
                     const bTxt = document.getElementById('p-banner-text');
-                    
-                    if(data.bannerUrl) {
-                        bImg.src = data.bannerUrl;
-                        bImg.classList.remove('hidden');
-                        bTxt.classList.add('hidden');
-                    } else {
-                        bImg.classList.add('hidden');
-                        bTxt.classList.remove('hidden');
-                        bTxt.innerText = data.bannerText || "Creator Studio";
-                        banner.style.backgroundColor = data.bannerBg || "#1e1e1e";
-                        bTxt.style.color = data.bannerTextColor || "#ffffff";
-                    }
+                    bTxt.innerText = data.bannerText || "Creator Studio";
+                    banner.style.backgroundColor = data.bannerBg || "#121212";
+                    bTxt.style.color = data.bannerTextColor || "#ffffff";
 
-                    // Social Link Sync
-                    if(data.social1) document.getElementById('p-social-1').innerHTML = `<i class="fa-brands fa-instagram text-pink-500"></i> Instagram Linked`;
-                    if(data.social2) document.getElementById('p-social-2').innerHTML = `<i class="fa-brands fa-youtube text-red-500"></i> YouTube Linked`;
+                    // Fill Edit Fields
+                    document.getElementById('edit-shopName').value = data.shopName;
+                    document.getElementById('edit-bio').value = data.bio;
+                    document.getElementById('edit-city').value = data.city || "";
+                    document.getElementById('edit-contact').value = data.contact || "";
+                    document.getElementById('edit-banner-text').value = data.bannerText || "";
                 }
             });
         }
 
-        function updateProfile() {
-            const btn = document.getElementById('update-btn');
-            btn.innerText = "Saving...";
-            const updates = {
-                shopName: document.getElementById('edit-shopName').value,
-                bio: document.getElementById('edit-bio').value,
-                contact: document.getElementById('edit-contact').value,
-                city: document.getElementById('edit-city').value,
-                social1: document.getElementById('edit-social-1').value,
-                social2: document.getElementById('edit-social-2').value,
-                bannerText: document.getElementById('edit-banner-text').value,
-                bannerBg: document.getElementById('edit-banner-bg').value,
-                bannerTextColor: document.getElementById('edit-banner-color').value,
-                bannerUrl: document.getElementById('temp-banner-url').value
-            };
-            db.ref('users/' + auth.currentUser.uid).update(updates).then(() => {
-                btn.innerText = "Save";
-                closeModal('edit-profile-modal');
-            });
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('#section-feed, #section-orders, #section-settings').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            document.getElementById('section-' + tab).classList.remove('hidden');
         }
 
         function handleFileUpload(input, targetId, isProfilePic = false) {
             const file = input.files[0];
             if(!file) return;
             const ldr = document.getElementById('loader');
-            ldr.style.width = "50%";
-            const ref = storage.ref('users/' + auth.currentUser.uid + "/" + (isProfilePic ? 'profile' : Date.now()));
+            const statusTxt = document.getElementById('upload-status-text');
+            if(statusTxt) statusTxt.innerText = "Uploading...";
+            
+            ldr.style.width = "40%";
+            const ref = storage.ref('studio/' + auth.currentUser.uid + "/" + (isProfilePic ? 'avatar' : Date.now()));
             ref.put(file).then(s => s.ref.getDownloadURL().then(url => {
                 if(isProfilePic) {
                     db.ref('users/' + auth.currentUser.uid).update({ pic: url });
                 } else {
                     document.getElementById(targetId).value = url;
+                    if(statusTxt) statusTxt.innerText = "File Ready: " + file.name;
                 }
                 ldr.style.width = "100%";
-                setTimeout(()=>ldr.style.width="0%", 1000);
+                setTimeout(()=>ldr.style.width="0%", 800);
             }));
         }
 
-        // Previous functions for feed/tabs
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('#section-feed, #section-orders, #section-profile').forEach(el => el.classList.add('hidden'));
-            document.getElementById('tab-' + tab).classList.add('active');
-            document.getElementById('section-' + tab).classList.remove('hidden');
+        function updateProfile() {
+            const btn = document.getElementById('update-btn');
+            btn.innerText = "Updating...";
+            const updates = {
+                shopName: document.getElementById('edit-shopName').value,
+                bio: document.getElementById('edit-bio').value,
+                contact: document.getElementById('edit-contact').value,
+                city: document.getElementById('edit-city').value,
+                bannerText: document.getElementById('edit-banner-text').value,
+                bannerBg: document.getElementById('edit-banner-bg').value,
+                bannerTextColor: document.getElementById('edit-banner-color').value
+            };
+            db.ref('users/' + auth.currentUser.uid).update(updates).then(() => {
+                btn.innerText = "Save All Changes";
+                alert("Profile Updated!");
+            });
         }
 
         function savePost() {
-            const btn = document.getElementById('post-btn');
             const url = document.getElementById('post-videoUrl').value;
-            if(!url) return alert("Upload Media");
-            btn.disabled = true;
+            if(!url) return alert("Please upload a file first!");
             const postId = "POST_" + Date.now();
             db.ref('posts/' + postId).set({
                 postId: postId, uid: auth.currentUser.uid,
                 videoUrl: url, productName: document.getElementById('post-productName').value,
                 price: document.getElementById('post-price').value,
+                productLink: document.getElementById('post-productLink').value,
                 timestamp: Date.now()
-            }).then(() => { closeModal('upload-modal'); btn.disabled = false; });
+            }).then(() => { closeModal('upload-modal'); });
         }
 
         function loadFeed(uid) {
             db.ref('posts').orderByChild('uid').equalTo(uid).on('value', snap => {
                 const container = document.getElementById('section-feed');
                 container.innerHTML = "";
+                let count = 0;
                 snap.forEach(child => {
+                    count++;
                     const p = child.val();
-                    const isVid = p.videoUrl.includes(".mp4");
-                    container.innerHTML += `<div class="aspect-square relative border border-zinc-900 bg-zinc-900">
-                        <button class="delete-btn" onclick="deletePost('${p.postId}')">Delete</button>
+                    const isVid = p.videoUrl.includes(".mp4") || p.videoUrl.includes("video");
+                    container.innerHTML += `<div class="aspect-square relative border-[0.5px] border-black bg-zinc-900">
+                        <button class="delete-btn" onclick="deletePost('${p.postId}')"><i class="fa-solid fa-trash"></i></button>
                         ${isVid ? `<video src="${p.videoUrl}" class="w-full h-full object-cover"></video>` : `<img src="${p.videoUrl}" class="w-full h-full object-cover"/>`}
                     </div>`;
                 });
+                document.getElementById('post-count').innerText = count;
             });
         }
 
-        function deletePost(id) { if(confirm("Delete?")) db.ref('posts/' + id).remove(); }
+        function deletePost(id) { if(confirm("Delete this post?")) db.ref('posts/' + id).remove(); }
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
     </script>
