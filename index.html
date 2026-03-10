@@ -3,74 +3,94 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
-    <title>Sainiwalaa Studio</title>
+    <title>Sainiwalaa | Creator Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
     <style>
-        body { background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        .ig-input { background: #121212; border: 1px solid #363636; padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 12px; color: #fff; outline: none; }
-        .btn-primary { background: #0095f6; color: white; font-weight: bold; padding: 10px; border-radius: 8px; width: 100%; transition: 0.3s; }
-        .btn-primary:active { opacity: 0.7; }
-        .modal-up { position: fixed; bottom: -100%; left: 0; width: 100%; height: 85%; background: #121212; z-index: 1000; transition: 0.4s; border-radius: 20px 20px 0 0; padding: 20px; border-top: 1px solid #262626; }
-        .modal-up.active { bottom: 0; }
-        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 999; }
-        .overlay.active { display: block; }
+        body { background: #000; color: #fff; font-family: sans-serif; }
+        .ig-input { background: #121212; border: 1px solid #363636; padding: 10px; border-radius: 8px; width: 100%; margin-bottom: 10px; color: #fff; outline: none; font-size: 14px; }
+        .modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 90%; background: #121212; z-index: 1000; transition: 0.4s; border-radius: 20px 20px 0 0; padding: 20px; overflow-y: auto; }
+        .modal.active { bottom: 0; }
+        .tab-btn { flex: 1; text-align: center; padding: 12px; border-bottom: 2px solid transparent; opacity: 0.5; cursor: pointer; }
+        .tab-btn.active { border-bottom-color: #fff; opacity: 1; }
+        .post-card { aspect-ratio: 1/1; background: #1a1a1a; overflow: hidden; position: relative; }
+        .post-card img, .post-card video { width: 100%; height: 100%; object-fit: cover; }
+        #loader { height: 3px; background: #0095f6; width: 0%; position: fixed; top: 0; left: 0; z-index: 9999; transition: 0.3s; }
     </style>
 </head>
 <body>
 
-    <div id="auth-screen" class="fixed inset-0 bg-black z-[9999] flex flex-col items-center justify-center p-8">
-        <h1 class="text-4xl italic font-serif mb-10 tracking-widest text-white">SAINIWALAA</h1>
-        <div class="w-full max-w-sm space-y-4">
-            <button onclick="googleAuth()" class="btn-primary flex items-center justify-center gap-3">
-                <i class="fa-brands fa-google"></i> Continue with Google
-            </button>
-            <div class="flex items-center my-4 opacity-40"><hr class="flex-1 border-zinc-700"/><span class="px-4 text-xs font-bold">OR</span><hr class="flex-1 border-zinc-700"/></div>
-            <input id="email" class="ig-input" placeholder="Email"/>
-            <input id="pass" class="ig-input" placeholder="Password" type="password"/>
-            <div class="flex gap-2">
-                <button onclick="emailAuth('login')" class="btn-primary">Log In</button>
-                <button onclick="emailAuth('reg')" class="bg-zinc-800 text-white font-bold p-2 rounded-lg flex-1">Sign Up</button>
-            </div>
-            <p onclick="resetPass()" class="text-center text-xs text-[#0095f6] font-bold cursor-pointer mt-4">Forgot password?</p>
-        </div>
+    <div id="loader"></div>
+
+    <div id="auth-layer" class="fixed inset-0 bg-black z-[9999] flex flex-col items-center justify-center p-6">
+        <h1 class="text-4xl italic font-bold mb-10 tracking-widest">SAINIWALAA</h1>
+        <button onclick="login()" class="w-full max-w-xs bg-white text-black font-bold p-3 rounded-lg flex items-center justify-center gap-3">
+            <i class="fa-brands fa-google"></i> Login with Google
+        </button>
     </div>
 
-    <div id="main-content" class="hidden pb-20">
+    <div id="app" class="hidden">
         <header class="p-4 flex justify-between items-center border-b border-zinc-900 sticky top-0 bg-black z-50">
-            <span id="display-username" class="font-bold text-lg">creator_studio</span>
-            <i class="fa-solid fa-right-from-bracket text-red-500 text-xl" onclick="logout()"></i>
+            <span class="font-bold text-lg" id="shop-label">Shop Name</span>
+            <div class="flex gap-4">
+                <i class="fa-regular fa-square-plus text-2xl" onclick="openModal('upload-modal')"></i>
+                <i class="fa-solid fa-power-off text-red-500 text-xl" onclick="logout()"></i>
+            </div>
         </header>
 
-        <div class="p-4 flex items-center gap-6">
-            <div class="w-20 h-20 rounded-full p-1 bg-gradient-to-tr from-yellow-400 to-purple-600">
-                <img id="p-avatar" class="w-full h-full rounded-full border-2 border-black object-cover" src="https://via.placeholder.com/150"/>
+        <div class="p-5 flex items-center gap-6">
+            <div class="relative group">
+                <img id="user-img" class="w-20 h-20 rounded-full border-2 border-zinc-800 object-cover" src="https://via.placeholder.com/150"/>
+                <label for="profile-upload" class="absolute bottom-0 right-0 bg-[#0095f6] rounded-full p-1 border-2 border-black cursor-pointer">
+                    <i class="fa-solid fa-camera text-[10px]"></i>
+                </label>
+                <input type="file" id="profile-upload" class="hidden" accept="image/*" onchange="uploadProfileImg(this)"/>
             </div>
             <div class="flex-1">
-                <h2 id="p-name" class="font-bold">Creator Name</h2>
-                <p id="p-bio" class="text-sm text-zinc-400">Loading bio...</p>
-                <button onclick="openModal('edit-modal')" class="mt-2 bg-zinc-800 text-xs font-bold px-4 py-1 rounded">Edit Profile</button>
+                <h2 id="user-name" class="font-bold text-xl">Loading...</h2>
+                <p id="user-uid" class="text-[10px] text-zinc-500">UID: ---</p>
+                <div class="flex gap-4 mt-2">
+                    <div class="text-sm"><b>0</b> <span class="opacity-50">Posts</span></div>
+                    <div class="text-sm"><b>0</b> <span class="opacity-50">Orders</span></div>
+                </div>
             </div>
         </div>
 
-        <div id="feed-grid" class="grid grid-cols-3 gap-1 mt-4">
-            </div>
+        <div class="flex border-t border-zinc-900">
+            <div class="tab-btn active" onclick="showTab('feed')"><i class="fa-solid fa-table-cells"></i></div>
+            <div class="tab-btn" onclick="showTab('orders')"><i class="fa-solid fa-cart-shopping"></i></div>
+        </div>
+
+        <div id="feed-section" class="grid grid-cols-3 gap-0.5"></div>
+        <div id="orders-section" class="hidden p-4">
+            <p class="text-zinc-500 text-center py-10">No pending orders yet.</p>
+        </div>
     </div>
 
-    <div id="edit-overlay" class="overlay" onclick="closeModal('edit-modal')"></div>
-    <div id="edit-modal" class="modal-up">
-        <div class="flex justify-between items-center mb-6 border-b border-zinc-800 pb-4">
-            <span onclick="closeModal('edit-modal')">Cancel</span>
-            <b class="text-lg">Edit Profile</b>
-            <span class="text-[#0095f6] font-bold" onclick="updateProfile()">Done</span>
+    <div id="upload-modal" class="modal">
+        <div class="flex justify-between items-center mb-6">
+            <span onclick="closeModal('upload-modal')">Cancel</span>
+            <b class="text-lg">New Post</b>
+            <button onclick="savePost()" id="post-btn" class="text-[#0095f6] font-bold">Post</button>
         </div>
-        <input id="edit-name" class="ig-input" placeholder="Full Name"/>
-        <textarea id="edit-bio" class="ig-input h-24" placeholder="Bio"></textarea>
-        <input id="edit-pic" class="ig-input" placeholder="Profile Pic URL"/>
+        
+        <div class="space-y-4">
+            <div class="flex gap-3 h-32">
+                <div class="w-24 h-full bg-zinc-900 border border-dashed border-zinc-700 rounded flex items-center justify-center relative">
+                    <input type="file" id="post-file" class="hidden" accept="image/*,video/*" onchange="handleFile(this)"/>
+                    <label for="post-file" id="file-label" class="text-[10px] text-center p-1 cursor-pointer">Click to Upload Image/Video</label>
+                </div>
+                <textarea id="post-desc" class="flex-1 bg-transparent border-none outline-none text-sm" placeholder="Write a description..."></textarea>
+            </div>
+            <input id="post-price" class="ig-input" placeholder="Product Price (₹)"/>
+            <input id="post-link" class="ig-input" placeholder="Product Link (Amazon/Meesho)"/>
+            <input id="post-shop" class="ig-input" placeholder="Shop Name" readonly/>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <script>
@@ -86,94 +106,134 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
+        const storage = firebase.storage();
 
-        // 1. Auth Observer
+        let currentFileUrl = "";
+
+        // Auth Logic
+        function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+        function logout() { auth.signOut(); location.reload(); }
+
         auth.onAuthStateChanged(user => {
             if(user) {
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('main-content').classList.remove('hidden');
-                checkAndCreateUser(user);
-                loadProfile(user.uid);
-            } else {
-                document.getElementById('auth-screen').classList.remove('hidden');
-                document.getElementById('main-content').classList.add('hidden');
+                document.getElementById('auth-layer').style.display = 'none';
+                document.getElementById('app').classList.remove('hidden');
+                syncUser(user);
+                loadPosts();
             }
         });
 
-        // 2. Google Login
-        function googleAuth() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).catch(e => alert(e.message));
-        }
-
-        // 3. Email Login/Signup
-        function emailAuth(type) {
-            const e = document.getElementById('email').value;
-            const p = document.getElementById('pass').value;
-            if(!e || !p) return alert("Fields cannot be empty");
-            
-            if(type === 'login') {
-                auth.signInWithEmailAndPassword(e,p).catch(err => alert(err.message));
-            } else {
-                auth.createUserWithEmailAndPassword(e,p).then(res => {
-                    db.ref('users/' + res.user.uid).set({
-                        name: e.split('@')[0],
-                        bio: "Artist & Creator",
-                        pic: "https://via.placeholder.com/150"
-                    });
-                }).catch(err => alert(err.message));
-            }
-        }
-
-        // 4. Reset Password
-        function resetPass() {
-            const e = document.getElementById('email').value;
-            if(!e) return alert("Enter email first");
-            auth.sendPasswordResetEmail(e).then(() => alert("Reset link sent to email!"));
-        }
-
-        // 5. Check if profile exists
-        function checkAndCreateUser(user) {
+        // 1. Shop Name Logic (Database se sync)
+        function syncUser(user) {
             const userRef = db.ref('users/' + user.uid);
-            userRef.once('value', snap => {
-                if(!snap.exists()) {
+            userRef.on('value', snap => {
+                const data = snap.val();
+                if(data) {
+                    document.getElementById('user-name').innerText = data.name;
+                    document.getElementById('user-img').src = data.pic;
+                    document.getElementById('user-uid').innerText = "UID: " + user.uid;
+                    document.getElementById('shop-label').innerText = data.shopName || "Sainiwalaa Shop";
+                    document.getElementById('post-shop').value = data.shopName || "Sainiwalaa Shop";
+                } else {
+                    // Naya user hai toh default data banao
                     userRef.set({
-                        name: user.displayName || "New Creator",
-                        bio: "Welcome to my studio",
-                        pic: user.photoURL || "https://via.placeholder.com/150"
+                        name: user.displayName,
+                        pic: user.photoURL,
+                        shopName: user.displayName.split(' ')[0] + " Mart",
+                        email: user.email
                     });
                 }
             });
         }
 
-        // 6. Load & Update Profile
-        function loadProfile(uid) {
-            db.ref('users/' + uid).on('value', snap => {
-                const data = snap.val();
-                if(!data) return;
-                document.getElementById('p-name').innerText = data.name;
-                document.getElementById('display-username').innerText = data.name.toLowerCase().replace(/\s/g, '_');
-                document.getElementById('p-bio').innerText = data.bio;
-                document.getElementById('p-avatar').src = data.pic;
+        // 2. Profile Image Upload Logic
+        function uploadProfileImg(input) {
+            const file = input.files[0];
+            if(!file) return;
+            const ldr = document.getElementById('loader');
+            ldr.style.width = "50%";
+            const ref = storage.ref('profiles/' + auth.currentUser.uid);
+            ref.put(file).then(s => s.ref.getDownloadURL().then(url => {
+                db.ref('users/' + auth.currentUser.uid).update({ pic: url });
+                ldr.style.width = "100%";
+                setTimeout(()=> ldr.style.width = "0%", 1000);
+            }));
+        }
+
+        // 3. Post Upload Logic (Fixed Post Button)
+        function handleFile(input) {
+            const file = input.files[0];
+            if(!file) return;
+            const ldr = document.getElementById('loader');
+            ldr.style.width = "30%";
+            document.getElementById('file-label').innerText = "Uploading...";
+            
+            const ref = storage.ref('posts/' + Date.now());
+            ref.put(file).then(s => s.ref.getDownloadURL().then(url => {
+                currentFileUrl = url;
+                document.getElementById('file-label').innerText = "Upload Done ✅";
+                ldr.style.width = "100%";
+                setTimeout(()=> ldr.style.width = "0%", 1000);
+            }));
+        }
+
+        function savePost() {
+            if(!currentFileUrl) return alert("Please upload a file first!");
+            const btn = document.getElementById('post-btn');
+            btn.innerText = "Sharing...";
+            btn.disabled = true;
+
+            const postData = {
+                uid: auth.currentUser.uid,
+                shop: document.getElementById('post-shop').value,
+                desc: document.getElementById('post-desc').value,
+                price: document.getElementById('post-price').value,
+                link: document.getElementById('post-link').value,
+                file: currentFileUrl,
+                time: Date.now()
+            };
+
+            db.ref('posts').push(postData).then(() => {
+                closeModal('upload-modal');
+                btn.innerText = "Post";
+                btn.disabled = false;
+                currentFileUrl = "";
+                location.reload();
             });
         }
 
-        function updateProfile() {
-            const uid = auth.currentUser.uid;
-            const n = document.getElementById('edit-name').value;
-            const b = document.getElementById('edit-bio').value;
-            const p = document.getElementById('edit-pic').value;
-            
-            db.ref('users/' + uid).update({
-                name: n || document.getElementById('p-name').innerText,
-                bio: b || document.getElementById('p-bio').innerText,
-                pic: p || document.getElementById('p-avatar').src
-            }).then(() => closeModal('edit-modal'));
+        // 4. Tab Logic (Order Tab)
+        function showTab(type) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            if(type === 'feed') {
+                document.getElementById('feed-section').classList.remove('hidden');
+                document.getElementById('orders-section').classList.add('hidden');
+                event.currentTarget.classList.add('active');
+            } else {
+                document.getElementById('feed-section').classList.add('hidden');
+                document.getElementById('orders-section').classList.remove('hidden');
+                event.currentTarget.classList.add('active');
+            }
         }
 
-        function logout() { if(confirm("Logout from Studio?")) auth.signOut(); }
-        function openModal(id) { document.getElementById(id).classList.add('active'); document.getElementById('edit-overlay').classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); document.getElementById('edit-overlay').classList.remove('active'); }
+        // 5. Load Feed
+        function loadPosts() {
+            db.ref('posts').orderByChild('uid').equalTo(auth.currentUser.uid).on('value', snap => {
+                const feed = document.getElementById('feed-section');
+                feed.innerHTML = "";
+                snap.forEach(child => {
+                    const post = child.val();
+                    const card = document.createElement('div');
+                    card.className = "post-card";
+                    const isVideo = post.file.includes('.mp4') || post.file.includes('video');
+                    card.innerHTML = isVideo ? `<video src="${post.file}" muted></video>` : `<img src="${post.file}"/>`;
+                    feed.prepend(card);
+                });
+            });
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
     </script>
 </body>
 </html>
