@@ -66,6 +66,17 @@
             </div>
 
             <div class="listing-card">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] uppercase font-bold text-zinc-500 ml-1">Influencer Name</label>
+                        <input type="text" id="inf-name" class="input-box" placeholder="Your Name">
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase font-bold text-zinc-500 ml-1">Instagram ID</label>
+                        <input type="text" id="inf-insta" class="input-box" placeholder="@username">
+                    </div>
+                </div>
+
                 <label class="text-[10px] uppercase font-bold text-zinc-500 ml-1">Product Identity</label>
                 <input type="text" id="p-name" class="input-box" placeholder="Product Name (e.g. Luxury Watch)">
                 
@@ -114,7 +125,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
     <script>
-        // Firebase Config (Keep your original config here)
         const firebaseConfig = {
             apiKey: "AIzaSyCm-5fJ49MxP0MFT8dDIkptue15x_GaaYc",
             authDomain: "sainiwalaainfulencer.firebaseapp.com",
@@ -129,7 +139,6 @@
         const db = firebase.database();
         const storage = firebase.storage();
 
-        // --- Logic: Auth Check ---
         auth.onAuthStateChanged(user => {
             if (user) {
                 document.getElementById('auth-section').classList.add('hidden');
@@ -140,17 +149,13 @@
             }
         });
 
-        // --- Logic: Media Upload ---
         function uploadMedia(input) {
             const file = input.files[0];
             if(!file) return;
-            
             const bar = document.getElementById('progress-bar');
             bar.style.width = "20%";
-            
             const storageRef = storage.ref('blog_media/' + Date.now() + "_" + file.name);
             const uploadTask = storageRef.put(file);
-
             uploadTask.on('state_changed', 
                 (snap) => {
                     let p = (snap.bytesTransferred / snap.totalBytes) * 100;
@@ -167,20 +172,23 @@
             );
         }
 
-        // --- Action: Publish to Firebase (Feed) ---
         function publishPost() {
+            const infName = document.getElementById('inf-name').value;
+            const infInsta = document.getElementById('inf-insta').value;
             const name = document.getElementById('p-name').value;
             const url = document.getElementById('p-url').value;
             const price = document.getElementById('p-price').value;
             const plat = document.getElementById('p-platform').value;
             const link = document.getElementById('p-link').value;
 
-            if(!name || !url || !price) return alert("Please fill important fields!");
+            if(!name || !url || !price || !infName) return alert("Please fill Name and Product details!");
 
             const postId = db.ref('posts').push().key;
             const postData = {
                 postId: postId,
                 uid: auth.currentUser.uid,
+                influencerName: infName,
+                influencerInsta: infInsta,
                 productName: name,
                 mediaUrl: url,
                 description: document.getElementById('p-desc').value,
@@ -191,8 +199,7 @@
             };
 
             db.ref('posts/' + postId).set(postData).then(() => {
-                alert("🚀 Post Published to Feed!");
-                // Clear Form
+                alert("🚀 Post Published with Influencer Details!");
                 document.getElementById('p-name').value = "";
                 document.getElementById('p-url').value = "";
             });
@@ -201,7 +208,7 @@
         function login() {
             const e = document.getElementById('email').value;
             const p = document.getElementById('pass').value;
-            auth.signInWithEmailAndPassword(e, p);
+            auth.signInWithEmailAndPassword(e, p).catch(err => alert(err.message));
         }
 
         function logout() { auth.signOut(); }
