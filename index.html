@@ -7,64 +7,93 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; transition: 0.3s; }
-        .auth-card { background: #121212; border: 1px solid #262626; border-radius: 12px; padding: 25px; width: 100%; max-width: 350px; }
-        .ig-input { background: #1a1a1a; border: 1px solid #363636; padding: 12px; border-radius: 6px; width: 100%; margin-bottom: 10px; color: #fff; font-size: 14px; outline: none; }
-        .ig-input:focus { border-color: #555; }
-        .btn-primary { background: #0095f6; color: white; font-weight: bold; padding: 10px; width: 100%; border-radius: 6px; margin-top: 10px; active:opacity-70; }
+        body { background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif; transition: 0.3s; }
+        .auth-card { background: #121212; border: 1px solid #262626; border-radius: 12px; padding: 25px; width: 100%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .ig-input { background: #1a1a1a; border: 1px solid #363636; padding: 12px; border-radius: 6px; width: 100%; margin-bottom: 12px; color: #fff; font-size: 14px; outline: none; }
+        .ig-input:focus { border-color: #0095f6; }
+        .btn-primary { background: #0095f6; color: white; font-weight: bold; padding: 12px; width: 100%; border-radius: 8px; margin-top: 10px; transition: 0.2s; }
+        .btn-primary:active { opacity: 0.7; transform: scale(0.98); }
         .link-text { color: #0095f6; font-size: 13px; cursor: pointer; font-weight: 600; }
         .hidden { display: none !important; }
-        #loader { height: 3px; background: #0095f6; width: 0%; position: fixed; top: 0; left: 0; z-index: 9999; transition: 0.4s; }
+        #loader { height: 3px; background: linear-gradient(to right, #0095f6, #00d4ff); width: 0%; position: fixed; top: 0; left: 0; z-index: 9999; transition: 0.4s; }
+        .profile-pic { width: 100px; height: 100px; border-radius: 50%; border: 3px solid #262626; object-fit: cover; margin: 0 auto 15px; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
 
     <div id="loader"></div>
 
-    <div id="auth-section" class="flex flex-col items-center">
-        <h1 class="text-3xl font-bold italic mb-8 tracking-widest">SAINIWALAA</h1>
+    <div id="auth-section" class="flex flex-col items-center w-full">
+        <h1 class="text-4xl font-black italic mb-10 tracking-tighter text-white">SAINIWALAA</h1>
         
         <div id="login-form" class="auth-card">
-            <input type="email" id="login-email" class="ig-input" placeholder="ईमेल (Email)">
-            <input type="password" id="login-pass" class="ig-input" placeholder="पासवर्ड (Password)">
+            <h2 class="text-center font-bold mb-6 text-zinc-400">Login to Studio</h2>
+            <input type="email" id="login-email" class="ig-input" placeholder="Email Address">
+            <input type="password" id="login-pass" class="ig-input" placeholder="Password">
             <button onclick="handleLogin()" class="btn-primary">Log In</button>
-            <div class="mt-4 text-center">
+            <div class="mt-6 text-center space-y-2">
                 <p class="text-xs text-zinc-500">Don't have an account? <span class="link-text" onclick="showAuth('register')">Sign Up</span></p>
-                <p class="text-xs text-zinc-500 mt-2"><span class="link-text" onclick="showAuth('reset')">Forgot Password?</span></p>
+                <p class="text-xs text-zinc-500"><span class="link-text" onclick="showAuth('reset')">Forgot Password?</span></p>
             </div>
         </div>
 
         <div id="register-form" class="auth-card hidden">
-            <input type="text" id="reg-name" class="ig-input" placeholder="पूरा नाम (Full Name)">
-            <input type="email" id="reg-email" class="ig-input" placeholder="ईमेल (Email)">
-            <input type="password" id="reg-pass" class="ig-input" placeholder="पासवर्ड (Password)">
-            <button onclick="handleRegister()" class="btn-primary">Register</button>
-            <p class="mt-4 text-center text-xs text-zinc-500">Already have an account? <span class="link-text" onclick="showAuth('login')">Log In</span></p>
+            <h2 class="text-center font-bold mb-6 text-zinc-400">Create Account</h2>
+            <input type="text" id="reg-name" class="ig-input" placeholder="Your Full Name">
+            <input type="email" id="reg-email" class="ig-input" placeholder="Email Address">
+            <input type="password" id="reg-pass" class="ig-input" placeholder="Create Password">
+            <button onclick="handleRegister()" class="btn-primary">Register Now</button>
+            <p class="mt-6 text-center text-xs text-zinc-500">Already have an account? <span class="link-text" onclick="showAuth('login')">Log In</span></p>
         </div>
 
         <div id="reset-form" class="auth-card hidden">
-            <p class="text-xs text-zinc-400 mb-4 text-center">अपना ईमेल डालें, हम पासवर्ड रीसेट लिंक भेजेंगे।</p>
-            <input type="email" id="reset-email" class="ig-input" placeholder="Your Email">
-            <button onclick="handleReset()" class="btn-primary">Send Reset Link</button>
-            <p class="mt-4 text-center text-xs link-text" onclick="showAuth('login')">Back to Login</p>
+            <h2 class="text-center font-bold mb-4 text-zinc-400">Reset Password</h2>
+            <p class="text-xs text-zinc-500 mb-6 text-center">We'll send a recovery link to your email.</p>
+            <input type="email" id="reset-email" class="ig-input" placeholder="Enter your email">
+            <button onclick="handleReset()" class="btn-primary">Send Link</button>
+            <p class="mt-6 text-center text-xs link-text" onclick="showAuth('login')">Back to Login</p>
         </div>
     </div>
 
     <div id="app-section" class="hidden fixed inset-0 bg-black overflow-y-auto">
-        <header class="p-4 border-b border-zinc-900 flex justify-between items-center bg-black sticky top-0">
-            <span class="font-bold text-xl" id="display-shop">Studio</span>
-            <button onclick="logout()" class="text-red-500 font-bold text-sm">Logout</button>
+        <header class="p-4 border-b border-zinc-900 flex justify-between items-center bg-black/90 backdrop-blur-md sticky top-0 z-50">
+            <span class="font-black italic text-xl tracking-tighter" id="display-shop">STUDIO</span>
+            <button onclick="logout()" class="bg-zinc-900 px-4 py-1.5 rounded-full text-red-500 font-bold text-xs border border-zinc-800">Logout</button>
         </header>
         
-        <div class="p-6 text-center">
-            <img id="display-pic" src="" class="w-24 h-24 rounded-full mx-auto border-2 border-zinc-800 mb-4">
-            <h2 id="display-name" class="text-xl font-bold">---</h2>
-            <p id="display-email" class="text-zinc-500 text-sm">---</p>
-            <div class="mt-10 p-10 bg-zinc-900 rounded-xl border border-zinc-800">
-                <p class="text-zinc-400">Welcome to your secure Dashboard!</p>
-                <p class="text-[10px] mt-2 opacity-30">UID: <span id="display-uid"></span></p>
+        <main class="max-w-md mx-auto p-6">
+            <div class="text-center mt-4">
+                <div class="relative inline-block">
+                    <img id="display-pic" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="profile-pic">
+                </div>
+                <h2 id="display-name" class="text-2xl font-bold tracking-tight">---</h2>
+                <p id="display-email" class="text-zinc-500 text-sm mt-1">---</p>
+                
+                <div class="grid grid-cols-2 gap-4 mt-8">
+                    <div class="bg-zinc-900 p-4 rounded-2xl border border-zinc-800">
+                        <b class="block text-xl">0</b>
+                        <span class="text-[10px] text-zinc-500 uppercase font-bold">Followers</span>
+                    </div>
+                    <div class="bg-zinc-900 p-4 rounded-2xl border border-zinc-800">
+                        <b class="block text-xl text-blue-500">PRO</b>
+                        <span class="text-[10px] text-zinc-500 uppercase font-bold">Status</span>
+                    </div>
+                </div>
+
+                <div class="mt-8 p-6 bg-gradient-to-b from-zinc-900 to-black rounded-3xl border border-zinc-800 text-left">
+                    <h3 class="text-sm font-bold text-zinc-400 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-info text-blue-500"></i> Account Details
+                    </h3>
+                    <div class="space-y-3 text-xs">
+                        <p class="flex justify-between"><span class="text-zinc-500">Creator ID:</span> <span id="display-uid" class="font-mono text-[10px]">...</span></p>
+                        <p class="flex justify-between"><span class="text-zinc-500">Shop Name:</span> <span class="text-zinc-300" id="info-shop">...</span></p>
+                        <p class="flex justify-between"><span class="text-zinc-500">Security:</span> <span class="text-green-500">Encrypted</span></p>
+                    </div>
+                </div>
+                
+                <p class="text-[10px] text-zinc-600 mt-10">© 2026 SAINIWALAA CREATOR STUDIO</p>
             </div>
-        </div>
+        </main>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -72,7 +101,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
     <script>
-        // Firebase Config (Your Project)
+        // --- Firebase Configuration ---
         const firebaseConfig = {
             apiKey: "AIzaSyCm-5fJ49MxP0MFT8dDIkptue15x_GaaYc",
             authDomain: "sainiwalaainfulencer.firebaseapp.com",
@@ -86,80 +115,102 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // --- Auth State Monitor ---
+        // --- Auth State Monitor (Fixes Undefined) ---
         auth.onAuthStateChanged(user => {
             const loader = document.getElementById('loader');
-            loader.style.width = "100%";
-            setTimeout(() => {
-                loader.style.width = "0%";
-                if (user) {
+            loader.style.width = "40%";
+            
+            if (user) {
+                // Check if user exists in Database, if not, create it
+                db.ref('users/' + user.uid).once('value', snap => {
+                    if (!snap.exists()) {
+                        // This handles the first-time setup to prevent undefined errors
+                        db.ref('users/' + user.uid).set({
+                            uid: user.uid,
+                            name: user.displayName || "New Creator",
+                            email: user.email,
+                            shopName: "Studio_" + Math.floor(1000 + Math.random() * 9000),
+                            pic: "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                        });
+                    }
                     document.getElementById('auth-section').classList.add('hidden');
                     document.getElementById('app-section').classList.remove('hidden');
-                    loadUserData(user);
-                } else {
-                    document.getElementById('auth-section').classList.remove('hidden');
-                    document.getElementById('app-section').classList.add('hidden');
-                }
-            }, 800);
+                    loadUserData(user.uid);
+                });
+            } else {
+                document.getElementById('auth-section').classList.remove('hidden');
+                document.getElementById('app-section').classList.add('hidden');
+            }
+            loader.style.width = "100%";
+            setTimeout(() => { loader.style.width = "0%"; }, 500);
         });
 
-        // --- Logic: Switch Forms ---
+        // --- Form Switcher ---
         function showAuth(type) {
-            document.getElementById('login-form').classList.add('hidden');
-            document.getElementById('register-form').classList.add('hidden');
-            document.getElementById('reset-form').classList.add('hidden');
+            ["login-form", "register-form", "reset-form"].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
             document.getElementById(type + '-form').classList.remove('hidden');
         }
 
-        // --- Action: Register ---
+        // --- Handle Registration ---
         function handleRegister() {
-            const name = document.getElementById('reg-name').value;
-            const email = document.getElementById('reg-email').value;
-            const pass = document.getElementById('reg-pass').value;
-            if(!name || !email || !pass) return alert("All fields are required!");
+            const name = document.getElementById('reg-name').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const pass = document.getElementById('reg-pass').value.trim();
+
+            if(!name || !email || !pass) return alert("Please fill all fields!");
+            if(pass.length < 6) return alert("Password should be at least 6 characters!");
 
             auth.createUserWithEmailAndPassword(email, pass)
                 .then(res => {
-                    db.ref('users/' + res.user.uid).set({
+                    // Immediate database entry after account creation
+                    return db.ref('users/' + res.user.uid).set({
                         uid: res.user.uid,
                         name: name,
                         email: email,
-                        shopName: name.split(' ')[0] + " Studio",
+                        shopName: name.split(' ')[0] + "_Studio",
                         pic: "https://cdn-icons-png.flaticon.com/512/149/149071.png"
                     });
-                    alert("Registration Successful!");
                 })
+                .then(() => alert("Registration Successful! Welcome to Sainiwalaa."))
                 .catch(err => alert(err.message));
         }
 
-        // --- Action: Login ---
+        // --- Handle Login ---
         function handleLogin() {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-pass').value;
-            auth.signInWithEmailAndPassword(email, pass).catch(err => alert(err.message));
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-pass').value.trim();
+            if(!email || !pass) return alert("Enter credentials!");
+
+            auth.signInWithEmailAndPassword(email, pass)
+                .catch(err => alert("Login Failed: " + err.message));
         }
 
-        // --- Action: Reset Password ---
+        // --- Handle Reset ---
         function handleReset() {
-            const email = document.getElementById('reset-email').value;
-            if(!email) return alert("Please enter email");
+            const email = document.getElementById('reset-email').value.trim();
+            if(!email) return alert("Enter your email first!");
             auth.sendPasswordResetEmail(email)
-                .then(() => alert("Reset Link Sent! Check your email inbox."))
+                .then(() => alert("Reset link sent! Please check your email inbox."))
                 .catch(err => alert(err.message));
         }
 
-        // --- Action: Logout ---
-        function logout() { auth.signOut(); }
+        // --- Handle Logout ---
+        function logout() {
+            if(confirm("Are you sure you want to logout?")) auth.signOut();
+        }
 
-        // --- Load User Profile Data ---
-        function loadUserData(user) {
-            db.ref('users/' + user.uid).on('value', snap => {
+        // --- Realtime Data Loading ---
+        function loadUserData(uid) {
+            db.ref('users/' + uid).on('value', snap => {
                 const data = snap.val();
                 if(data) {
-                    document.getElementById('display-name').innerText = data.name;
-                    document.getElementById('display-email').innerText = data.email;
-                    document.getElementById('display-pic').src = data.pic;
-                    document.getElementById('display-shop').innerText = data.shopName;
+                    document.getElementById('display-name').innerText = data.name || "No Name";
+                    document.getElementById('display-email').innerText = data.email || "No Email";
+                    document.getElementById('display-pic').src = data.pic || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+                    document.getElementById('display-shop').innerText = (data.shopName || "STUDIO").toUpperCase();
+                    document.getElementById('info-shop').innerText = data.shopName || "Not Set";
                     document.getElementById('display-uid').innerText = data.uid;
                 }
             });
