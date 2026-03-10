@@ -2,19 +2,23 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<title>Sainiwalaa Creator</title>
+<title>Sainiwalaa Creator & Public Feed</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
 body{margin:0;font-family:Arial;background:#fafafa}
-.header{background:white;padding:15px;display:flex;justify-content:space-between;border-bottom:1px solid #ddd}
+.header{background:white;padding:15px;display:flex;justify-content:space-between;border-bottom:1px solid #ddd;align-items:center}
+.header b{font-size:18px}
 .container{max-width:600px;margin:auto;background:white;padding-bottom:50px}
 .profile{padding:20px;text-align:center}
 .avatar{width:90px;height:90px;border-radius:50%;object-fit:cover}
 button{padding:10px 15px;margin:5px;border:1px solid #ccc;background:white;border-radius:6px;cursor:pointer}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:20px}
-.post{height:120px;background-size:cover;background-position:center;position:relative}
-.post-info{position:absolute;bottom:0;background:rgba(0,0,0,0.5);color:white;font-size:10px;width:100%;padding:2px;text-align:center}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-bottom:30px}
+.post{height:120px;background-size:cover;background-position:center;position:relative;cursor:pointer}
+.post span{position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,0.5);color:white;font-size:10px;padding:1px 3px;border-radius:3px}
 .info{font-size:12px;color:#777;margin-top:10px;text-align:center}
+.nav{display:flex;justify-content:center;gap:10px;margin:10px 0}
+.nav button{font-size:12px;padding:5px 10px}
 </style>
 </head>
 <body>
@@ -27,15 +31,26 @@ button{padding:10px 15px;margin:5px;border:1px solid #ccc;background:white;borde
 </div>
 </div>
 
-<div class="container">
-<div class="profile">
-<img id="avatar" class="avatar" src="https://via.placeholder.com/90">
-<h3 id="name">Creator</h3>
-<button onclick="uploadPost()">Upload Post</button>
-<div class="info"><span id="uid"></span></div>
+<div class="nav">
+<button onclick="showCreator()">Creator Dashboard</button>
+<button onclick="showPublicFeed()">Public Feed</button>
 </div>
 
-<div class="grid" id="postGrid"></div>
+<div class="container" id="creatorSection">
+  <div class="profile">
+    <img id="avatar" class="avatar" src="https://via.placeholder.com/90">
+    <h3 id="name">Creator</h3>
+    <button onclick="uploadPost()">Upload Post</button>
+    <div class="info">
+      <span id="uid"></span>
+    </div>
+  </div>
+  <div class="grid" id="postGrid"></div>
+</div>
+
+<div class="container" id="publicFeed" style="display:none">
+  <h3 style="text-align:center">Public Feed</h3>
+  <div class="grid" id="publicGrid"></div>
 </div>
 
 <input type="file" id="fileInput" accept="image/*,video/*" style="display:none">
@@ -58,111 +73,100 @@ const firebaseConfig = {
   appId: "1:116125275008:web:dc09ab0c6ce0317436e765"
 };
 firebase.initializeApp(firebaseConfig);
+
 const auth = firebase.auth();
 const storage = firebase.storage();
 const db = firebase.database();
 
-// Google Apps Script API
+// Google Apps Script API for Sheet sync
 const API="https://script.google.com/macros/s/AKfycbxSg4X4HYjUoX9rfmnjU9lBUyv0aKtJB_pAp0K9z3A5NMHrhASg3aTNz-H3JnOa1twurA/exec";
 
-// Login/Logout
+// --- Login/Logout ---
 function login(){ auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
 function logout(){ auth.signOut(); }
 
-// Auth state listener
+// --- Sections Toggle ---
+function showCreator(){ document.getElementById("creatorSection").style.display="block"; document.getElementById("publicFeed").style.display="none"; }
+function showPublicFeed(){ document.getElementById("creatorSection").style.display="none"; document.getElementById("publicFeed").style.display="block"; }
+
+// --- Auth listener ---
 auth.onAuthStateChanged(user=>{
   if(user){
-    document.getElementById("name").innerText = user.displayName;
-    document.getElementById("avatar").src = user.photoURL;
-    document.getElementById("uid").innerText = "UID: "+user.uid;
+    document.getElementById("name").innerText=user.displayName;
+    document.getElementById("avatar").src=user.photoURL;
+    document.getElementById("uid").innerText="UID: "+user.uid;
     loadProfile(user.uid);
-    loadPosts();
+    loadCreatorPosts(user.uid);
+    loadPublicFeed();
   } else {
-    document.getElementById("name").innerText = "Creator";
-    document.getElementById("avatar").src = "https://via.placeholder.com/90";
-    document.getElementById("uid").innerText = "";
+    document.getElementById("name").innerText="Creator";
+    document.getElementById("avatar").src="https://via.placeholder.com/90";
+    document.getElementById("uid").innerText="";
     document.getElementById("postGrid").innerHTML="";
+    document.getElementById("publicGrid").innerHTML="";
   }
 });
 
-// Load user profile
+// --- Load user profile from Sheet API ---
 function loadProfile(uid){
-  fetch(API)
-    .then(r=>r.json())
-    .then(data=>{
-      data.forEach(row=>{
-        if(row[0]==uid){
-          document.getElementById("name").innerText = row[1] || "Creator";
-        }
-      });
-    });
+  fetch(API).then(r=>r.json()).then(data=>{
+    data.forEach(row=>{
+      if(row[0]==uid) document.getElementById("name").innerText=row[3]||"Creator";
+    })
+  });
 }
 
-// Upload post
+// --- Upload post ---
 function uploadPost(){ document.getElementById("fileInput").click(); }
+document.getElementById("fileInput").addEventListener("change",function(){
+  const file=this.files[0], user=auth.currentUser;
+  if(!file||!user) return;
 
-document.getElementById("fileInput").addEventListener("change", function(){
-  const file = this.files[0];
-  const user = auth.currentUser;
-  if(!file||!user)return;
-  const ref = storage.ref("posts/"+user.uid+"/"+Date.now());
-  ref.put(file).then(snapshot=>{
-    snapshot.ref.getDownloadURL().then(url=>{
-      // Ask for extra details
-      const shopName = prompt("Shop Name:");
-      const videoLink = file.type.includes("video") ? url : "";
-      const price = prompt("Price:");
-      const platform = prompt("Platform (Amazon, Meesho...):");
-      const description = prompt("Description:");
-      const productLink = prompt("Product Link:");
-      const influenceContact = prompt("Influence Contact? (yes/no):");
-
-      const postData = {
-        uid:user.uid,
-        shopName,
-        videoLink,
-        price,
-        platform,
-        description,
-        productLink,
-        influenceContact,
-        media:url,
-        timestamp:Date.now()
-      };
-
+  const ref=storage.ref("posts/"+user.uid+"/"+Date.now());
+  ref.put(file).then(s=>{
+    s.ref.getDownloadURL().then(url=>{
       const id=Date.now();
+      const postData={
+        uid:user.uid,
+        media:url,
+        timestamp:new Date().toISOString()
+      };
       db.ref("posts/"+id).set(postData);
-      showPost(postData);
+      showPost(url,true); // show in creator
+      showPost(url,false); // show in public feed
     });
   });
 });
 
-// Show post
-function showPost(postData){
-  const grid = document.getElementById("postGrid");
-  const post = document.createElement("div");
+// --- Show post ---
+function showPost(url,isCreator=true){
+  const grid=isCreator?document.getElementById("postGrid"):document.getElementById("publicGrid");
+  const post=document.createElement("div");
   post.className="post";
-  post.style.backgroundImage="url("+postData.media+")";
-
-  const info = document.createElement("div");
-  info.className="post-info";
-  info.innerText = postData.shopName + " | ₹"+postData.price;
-  post.appendChild(info);
-
+  post.style.backgroundImage="url("+url+")";
+  if(!isCreator) post.title="Public Post";
   grid.prepend(post);
 }
 
-// Load posts
-function loadPosts(){
-  db.ref("posts").orderByChild("timestamp").limitToLast(10).on("value",snap=>{
+// --- Load creator posts ---
+function loadCreatorPosts(uid){
+  db.ref("posts").orderByChild("uid").equalTo(uid).on("value",snap=>{
     const grid=document.getElementById("postGrid");
     grid.innerHTML="";
-    snap.forEach(p=>{
-      showPost(p.val());
-    });
+    snap.forEach(p=> showPost(p.val().media,true));
+  });
+}
+
+// --- Load public feed ---
+function loadPublicFeed(){
+  db.ref("posts").orderByChild("timestamp").limitToLast(10).on("value",snap=>{
+    const grid=document.getElementById("publicGrid");
+    grid.innerHTML="";
+    let arr=[];
+    snap.forEach(p=>arr.push(p.val().media));
+    arr.reverse().forEach(url=>showPost(url,false));
   });
 }
 </script>
-
 </body>
 </html>
