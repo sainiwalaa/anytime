@@ -3,133 +3,76 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
-    <title>Sainiwalaa | Creator Studio Pro</title>
+    <title>Sainiwalaa Studio | Secure Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
     <style>
-        body { background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-        .ig-input { background: #121212; border: 1px solid #363636; padding: 10px; border-radius: 4px; width: 100%; margin-bottom: 12px; color: #fff; font-size: 14px; }
-        .modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 95%; background: #000; z-index: 1000; transition: 0.4s ease; border-radius: 15px 15px 0 0; border-top: 1px solid #262626; padding: 15px; overflow-y: auto; }
-        .modal.active { bottom: 0; }
-        .tab-btn { flex: 1; text-align: center; padding: 12px; color: #8e8e8e; cursor: pointer; border-bottom: 1px solid transparent; }
-        .tab-btn.active { border-bottom: 1px solid #fff; color: #fff; }
-        .profile-pic { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #262626; object-fit: cover; }
-        #loader { height: 2px; background: #0095f6; width: 0%; position: fixed; top: 0; left: 0; z-index: 9999; }
-        .action-btn { background: #363636; padding: 6px 0; border-radius: 8px; font-weight: 600; font-size: 14px; width: 100%; text-align: center; }
+        body { background: #000; color: #fff; font-family: sans-serif; transition: 0.3s; }
+        .auth-card { background: #121212; border: 1px solid #262626; border-radius: 12px; padding: 25px; width: 100%; max-width: 350px; }
+        .ig-input { background: #1a1a1a; border: 1px solid #363636; padding: 12px; border-radius: 6px; width: 100%; margin-bottom: 10px; color: #fff; font-size: 14px; outline: none; }
+        .ig-input:focus { border-color: #555; }
+        .btn-primary { background: #0095f6; color: white; font-weight: bold; padding: 10px; width: 100%; border-radius: 6px; margin-top: 10px; active:opacity-70; }
+        .link-text { color: #0095f6; font-size: 13px; cursor: pointer; font-weight: 600; }
+        .hidden { display: none !important; }
+        #loader { height: 3px; background: #0095f6; width: 0%; position: fixed; top: 0; left: 0; z-index: 9999; transition: 0.4s; }
     </style>
 </head>
-<body>
+<body class="flex items-center justify-center min-h-screen p-4">
 
     <div id="loader"></div>
 
-    <div id="auth-layer" class="fixed inset-0 bg-black z-[9999] flex flex-col items-center justify-center p-8">
-        <h1 class="text-3xl font-bold italic mb-10 tracking-widest">SAINIWALAA</h1>
-        <button onclick="login()" class="w-full max-w-xs bg-[#0095f6] text-white font-bold p-3 rounded-lg flex items-center justify-center gap-3">
-            <i class="fa-brands fa-google"></i> Login with Google
-        </button>
-    </div>
-
-    <div id="app" class="hidden max-w-md mx-auto">
-        <header class="p-4 flex justify-between items-center border-b border-zinc-900 sticky top-0 bg-black z-50">
-            <span class="font-bold text-xl" id="hdr-shopName">Studio</span>
-            <div class="flex gap-6 items-center">
-                <i class="fa-regular fa-square-plus text-2xl" onclick="openModal('upload-modal')"></i>
-                <i class="fa-solid fa-bars text-xl" onclick="switchTab('settings')"></i>
-            </div>
-        </header>
-
-        <div class="p-4">
-            <div class="flex items-center gap-8">
-                <div class="relative">
-                    <img id="p-user-img" src="" class="profile-pic">
-                    <label for="file-p-img" class="absolute bottom-0 right-0 bg-[#0095f6] rounded-full p-1 border-2 border-black cursor-pointer">
-                        <i class="fa-solid fa-plus text-[10px]"></i>
-                    </label>
-                    <input type="file" id="file-p-img" class="hidden" accept="image/*" onchange="handleFileUpload(this, 'pic', true)">
-                </div>
-                <div class="flex flex-1 justify-around text-center">
-                    <div><b class="block text-lg" id="st-post">0</b><span class="text-xs text-zinc-400">Posts</span></div>
-                    <div><b class="block text-lg" id="st-influence">0</b><span class="text-xs text-zinc-400">Influence</span></div>
-                    <div><b class="block text-lg">0</b><span class="text-xs text-zinc-400">Orders</span></div>
-                </div>
-            </div>
-
-            <div class="mt-3">
-                <h2 id="p-displayName" class="font-bold text-sm">---</h2>
-                <p id="p-bio" class="text-sm text-zinc-200">Bio loading...</p>
-                <div id="p-location" class="text-xs text-blue-400 mt-1"><i class="fa-solid fa-location-dot"></i> <span>City</span></div>
-            </div>
-
-            <div class="mt-4 flex gap-2">
-                <div class="action-btn" onclick="switchTab('settings')">Edit Profile</div>
-                <div class="action-btn" onclick="logout()">Logout</div>
-            </div>
-        </div>
-
-        <div class="flex border-t border-zinc-900 mt-4">
-            <div id="tab-feed" class="tab-btn active" onclick="switchTab('feed')"><i class="fa-solid fa-table-cells text-xl"></i></div>
-            <div id="tab-orders" class="tab-btn" onclick="switchTab('orders')"><i class="fa-solid fa-cart-shopping text-xl"></i></div>
-        </div>
-
-        <div id="section-feed" class="grid grid-cols-3 gap-0.5 pb-24"></div>
-
-        <div id="section-settings" class="hidden p-4 pb-24">
-            <h3 class="font-bold mb-4">Edit Profile</h3>
-            <div class="space-y-4">
-                <div>
-                    <label class="text-xs text-zinc-500">Shop Name (90 days lock)</label>
-                    <input id="edit-shopName" class="ig-input" placeholder="Shop Name"/>
-                </div>
-                <input id="edit-bio" class="ig-input" placeholder="Bio"/>
-                <input id="edit-city" class="ig-input" placeholder="City"/>
-                <input id="edit-contact" class="ig-input" placeholder="WhatsApp Number"/>
-                <input id="edit-social" class="ig-input" placeholder="Social Link (Instagram/YT)"/>
-                
-                <div class="p-3 bg-zinc-950 rounded text-[10px] text-zinc-500">
-                    <p>UID: <span id="p-uid">---</span></p>
-                    <p>Email: <span id="p-email">---</span></p>
-                    <p>Member Since: <span id="p-date">---</span></p>
-                </div>
-                
-                <button onclick="updateProfile()" id="update-btn" class="w-full bg-[#0095f6] font-bold py-2 rounded-lg">Save Changes</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="upload-modal" class="modal">
-        <div class="flex justify-between items-center mb-4">
-            <span onclick="closeModal('upload-modal')"><i class="fa-solid fa-xmark text-xl"></i></span>
-            <b class="text-lg">New Post</b>
-            <button onclick="savePost()" id="post-btn" class="text-[#0095f6] font-bold">Share</button>
-        </div>
+    <div id="auth-section" class="flex flex-col items-center">
+        <h1 class="text-3xl font-bold italic mb-8 tracking-widest">SAINIWALAA</h1>
         
-        <div class="space-y-4">
-            <div class="bg-zinc-900 rounded-lg p-6 text-center border border-zinc-800" onclick="document.getElementById('post-file').click()">
-                <input type="file" id="post-file" class="hidden" accept="video/*,image/*" onchange="handleFileUpload(this, 'post-videoUrl')"/>
-                <p id="up-text" class="text-sm text-zinc-400">Tap to Upload 90s Video or Image</p>
-                <input id="post-videoUrl" class="ig-input mt-4" placeholder="Or Paste URL here" onclick="event.stopPropagation()"/>
+        <div id="login-form" class="auth-card">
+            <input type="email" id="login-email" class="ig-input" placeholder="ईमेल (Email)">
+            <input type="password" id="login-pass" class="ig-input" placeholder="पासवर्ड (Password)">
+            <button onclick="handleLogin()" class="btn-primary">Log In</button>
+            <div class="mt-4 text-center">
+                <p class="text-xs text-zinc-500">Don't have an account? <span class="link-text" onclick="showAuth('register')">Sign Up</span></p>
+                <p class="text-xs text-zinc-500 mt-2"><span class="link-text" onclick="showAuth('reset')">Forgot Password?</span></p>
             </div>
+        </div>
 
-            <input id="post-productName" class="ig-input" placeholder="Product Name *"/>
-            <div class="flex gap-2">
-                <input id="post-price" class="ig-input" placeholder="Price (₹) *"/>
-                <select id="post-platform" class="ig-input">
-                    <option value="Amazon">Amazon</option>
-                    <option value="Flipkart">Flipkart</option>
-                    <option value="Myntra">Myntra</option>
-                </select>
-            </div>
-            <input id="post-productLink" class="ig-input" placeholder="Product Link *"/>
-            <textarea id="post-description" class="ig-input h-20" placeholder="Description..."></textarea>
+        <div id="register-form" class="auth-card hidden">
+            <input type="text" id="reg-name" class="ig-input" placeholder="पूरा नाम (Full Name)">
+            <input type="email" id="reg-email" class="ig-input" placeholder="ईमेल (Email)">
+            <input type="password" id="reg-pass" class="ig-input" placeholder="पासवर्ड (Password)">
+            <button onclick="handleRegister()" class="btn-primary">Register</button>
+            <p class="mt-4 text-center text-xs text-zinc-500">Already have an account? <span class="link-text" onclick="showAuth('login')">Log In</span></p>
+        </div>
+
+        <div id="reset-form" class="auth-card hidden">
+            <p class="text-xs text-zinc-400 mb-4 text-center">अपना ईमेल डालें, हम पासवर्ड रीसेट लिंक भेजेंगे।</p>
+            <input type="email" id="reset-email" class="ig-input" placeholder="Your Email">
+            <button onclick="handleReset()" class="btn-primary">Send Reset Link</button>
+            <p class="mt-4 text-center text-xs link-text" onclick="showAuth('login')">Back to Login</p>
         </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <div id="app-section" class="hidden fixed inset-0 bg-black overflow-y-auto">
+        <header class="p-4 border-b border-zinc-900 flex justify-between items-center bg-black sticky top-0">
+            <span class="font-bold text-xl" id="display-shop">Studio</span>
+            <button onclick="logout()" class="text-red-500 font-bold text-sm">Logout</button>
+        </header>
+        
+        <div class="p-6 text-center">
+            <img id="display-pic" src="" class="w-24 h-24 rounded-full mx-auto border-2 border-zinc-800 mb-4">
+            <h2 id="display-name" class="text-xl font-bold">---</h2>
+            <p id="display-email" class="text-zinc-500 text-sm">---</p>
+            <div class="mt-10 p-10 bg-zinc-900 rounded-xl border border-zinc-800">
+                <p class="text-zinc-400">Welcome to your secure Dashboard!</p>
+                <p class="text-[10px] mt-2 opacity-30">UID: <span id="display-uid"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
     <script>
+        // Firebase Config (Your Project)
         const firebaseConfig = {
             apiKey: "AIzaSyCm-5fJ49MxP0MFT8dDIkptue15x_GaaYc",
             authDomain: "sainiwalaainfulencer.firebaseapp.com",
@@ -142,165 +85,84 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
-        const storage = firebase.storage();
 
-        let userData = {};
-
+        // --- Auth State Monitor ---
         auth.onAuthStateChanged(user => {
-            if (user) {
-                document.getElementById('auth-layer').style.display = 'none';
-                document.getElementById('app').classList.remove('hidden');
-                initUser(user);
-                loadFeed(user.uid);
-            } else {
-                document.getElementById('auth-layer').style.display = 'flex';
-                document.getElementById('app').classList.add('hidden');
-            }
+            const loader = document.getElementById('loader');
+            loader.style.width = "100%";
+            setTimeout(() => {
+                loader.style.width = "0%";
+                if (user) {
+                    document.getElementById('auth-section').classList.add('hidden');
+                    document.getElementById('app-section').classList.remove('hidden');
+                    loadUserData(user);
+                } else {
+                    document.getElementById('auth-section').classList.remove('hidden');
+                    document.getElementById('app-section').classList.add('hidden');
+                }
+            }, 800);
         });
 
-        function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-        function logout() { if(confirm("Logout?")) auth.signOut(); }
+        // --- Logic: Switch Forms ---
+        function showAuth(type) {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('register-form').classList.add('hidden');
+            document.getElementById('reset-form').classList.add('hidden');
+            document.getElementById(type + '-form').classList.remove('hidden');
+        }
 
-        function initUser(user) {
+        // --- Action: Register ---
+        function handleRegister() {
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const pass = document.getElementById('reg-pass').value;
+            if(!name || !email || !pass) return alert("All fields are required!");
+
+            auth.createUserWithEmailAndPassword(email, pass)
+                .then(res => {
+                    db.ref('users/' + res.user.uid).set({
+                        uid: res.user.uid,
+                        name: name,
+                        email: email,
+                        shopName: name.split(' ')[0] + " Studio",
+                        pic: "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                    });
+                    alert("Registration Successful!");
+                })
+                .catch(err => alert(err.message));
+        }
+
+        // --- Action: Login ---
+        function handleLogin() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            auth.signInWithEmailAndPassword(email, pass).catch(err => alert(err.message));
+        }
+
+        // --- Action: Reset Password ---
+        function handleReset() {
+            const email = document.getElementById('reset-email').value;
+            if(!email) return alert("Please enter email");
+            auth.sendPasswordResetEmail(email)
+                .then(() => alert("Reset Link Sent! Check your email inbox."))
+                .catch(err => alert(err.message));
+        }
+
+        // --- Action: Logout ---
+        function logout() { auth.signOut(); }
+
+        // --- Load User Profile Data ---
+        function loadUserData(user) {
             db.ref('users/' + user.uid).on('value', snap => {
-                userData = snap.val();
-                if(!userData) {
-                    const newUser = {
-                        uid: user.uid, name: user.displayName, email: user.email,
-                        pic: user.photoURL, shopName: user.displayName.split(' ')[0] + "_Studio",
-                        influence: 0, createdAt: new Date().toLocaleDateString(),
-                        shopLockedUntil: 0, bio: "Creator Studio", city: "Earth"
-                    };
-                    db.ref('users/' + user.uid).set(newUser);
-                    return;
+                const data = snap.val();
+                if(data) {
+                    document.getElementById('display-name').innerText = data.name;
+                    document.getElementById('display-email').innerText = data.email;
+                    document.getElementById('display-pic').src = data.pic;
+                    document.getElementById('display-shop').innerText = data.shopName;
+                    document.getElementById('display-uid').innerText = data.uid;
                 }
-                // UI Updates
-                document.getElementById('hdr-shopName').innerText = userData.shopName;
-                document.getElementById('p-displayName').innerText = userData.name;
-                document.getElementById('p-user-img').src = userData.pic;
-                document.getElementById('p-bio').innerText = userData.bio;
-                document.getElementById('p-location').querySelector('span').innerText = userData.city;
-                document.getElementById('st-influence').innerText = userData.influence || 0;
-                
-                // Settings Fields
-                document.getElementById('edit-shopName').value = userData.shopName;
-                document.getElementById('edit-bio').value = userData.bio;
-                document.getElementById('edit-city').value = userData.city;
-                document.getElementById('edit-contact').value = userData.contact || "";
-                document.getElementById('p-uid').innerText = userData.uid;
-                document.getElementById('p-email').innerText = userData.email;
-                document.getElementById('p-date').innerText = userData.createdAt;
             });
-        }
-
-        function handleFileUpload(input, field, isProfile = false) {
-            const file = input.files[0];
-            if(!file) return;
-            
-            // 90s Video Check
-            if(file.type.includes('video')) {
-                const vid = document.createElement('video');
-                vid.preload = 'metadata';
-                vid.onloadedmetadata = () => {
-                    if(vid.duration > 91) { alert("Max 90 seconds allowed"); input.value=""; return; }
-                    uploadToFirebase(file, field, isProfile);
-                };
-                vid.src = URL.createObjectURL(file);
-            } else {
-                uploadToFirebase(file, field, isProfile);
-            }
-        }
-
-        function uploadToFirebase(file, field, isProfile) {
-            const ldr = document.getElementById('loader');
-            ldr.style.width = "40%";
-            const path = isProfile ? 'profiles/' : 'posts/';
-            const ref = storage.ref(path + auth.currentUser.uid + "/" + Date.now());
-            
-            ref.put(file).then(s => s.ref.getDownloadURL().then(url => {
-                if(isProfile) {
-                    db.ref('users/' + auth.currentUser.uid).update({ pic: url });
-                } else {
-                    document.getElementById('post-videoUrl').value = url;
-                    document.getElementById('up-text').innerText = "✅ Media Ready!";
-                }
-                ldr.style.width = "100%";
-                setTimeout(()=> ldr.style.width="0%", 500);
-            }));
-        }
-
-        function updateProfile() {
-            const newShopName = document.getElementById('edit-shopName').value;
-            const now = Date.now();
-            let updates = {
-                bio: document.getElementById('edit-bio').value,
-                city: document.getElementById('edit-city').value,
-                contact: document.getElementById('edit-contact').value
-            };
-
-            // Shop Name Lock Logic (90 Days)
-            if(newShopName !== userData.shopName) {
-                if(userData.shopLockedUntil && now < userData.shopLockedUntil) {
-                    const daysLeft = Math.ceil((userData.shopLockedUntil - now) / (1000 * 60 * 60 * 24));
-                    alert(`Shop Name is locked. Wait ${daysLeft} days to change again.`);
-                    return;
-                }
-                updates.shopName = newShopName;
-                updates.shopLockedUntil = now + (90 * 24 * 60 * 60 * 1000); // 90 Days Lock
-            }
-
-            db.ref('users/' + auth.currentUser.uid).update(updates).then(() => alert("Profile Updated!"));
-        }
-
-        function savePost() {
-            const url = document.getElementById('post-videoUrl').value;
-            if(!url) return alert("Upload media first");
-            
-            const postId = "POST_" + Date.now();
-            const postData = {
-                postId: postId, uid: auth.currentUser.uid,
-                shopName: userData.shopName, videoUrl: url,
-                productName: document.getElementById('post-productName').value,
-                price: document.getElementById('post-price').value,
-                platform: document.getElementById('post-platform').value,
-                productLink: document.getElementById('post-productLink').value,
-                description: document.getElementById('post-description').value,
-                timestamp: Date.now()
-            };
-
-            db.ref('posts/' + postId).set(postData).then(() => {
-                closeModal('upload-modal');
-                alert("Posted!");
-            });
-        }
-
-        function loadFeed(uid) {
-            db.ref('posts').orderByChild('uid').equalTo(uid).on('value', snap => {
-                const cont = document.getElementById('section-feed');
-                cont.innerHTML = "";
-                let count = 0;
-                snap.forEach(child => {
-                    count++;
-                    const p = child.val();
-                    const isVid = p.videoUrl.includes(".mp4") || p.videoUrl.includes("video") || p.videoUrl.includes("alt=media");
-                    cont.innerHTML += `
-                        <div class="aspect-square relative bg-zinc-900 overflow-hidden">
-                            ${isVid ? `<video src="${p.videoUrl}" class="w-full h-full object-cover"></video>` : `<img src="${p.videoUrl}" class="w-full h-full object-cover">`}
-                            <i class="fa-solid fa-trash absolute top-2 right-2 text-xs bg-black/40 p-1 rounded" onclick="deletePost('${p.postId}')"></i>
-                        </div>`;
-                });
-                document.getElementById('st-post').innerText = count;
-            });
-        }
-
-        function deletePost(id) { if(confirm("Delete post?")) db.ref('posts/' + id).remove(); }
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-        function switchTab(tab) {
-            document.querySelectorAll('#section-feed, #section-settings').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById('section-' + (tab === 'feed' ? 'feed' : 'settings')).classList.remove('hidden');
-            if(tab !== 'settings') document.getElementById('tab-' + tab).classList.add('active');
         }
     </script>
 </body>
