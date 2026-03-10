@@ -8,17 +8,13 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
     <style>
         body { background: #000; color: #fff; font-family: sans-serif; overflow-x: hidden; }
-        .ig-input { background: #121212; border: 1px solid #363636; padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 12px; color: #fff; outline: none; font-size: 14px; transition: 0.3s; }
-        .ig-input:focus { border-color: #0095f6; }
+        .ig-input { background: #121212; border: 1px solid #363636; padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 12px; color: #fff; outline: none; font-size: 14px; }
         .modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 95%; background: #121212; z-index: 1000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 20px 20px 0 0; padding: 20px; overflow-y: auto; }
         .modal.active { bottom: 0; }
-        .post-btn-active { background: #0095f6; color: white; padding: 10px; border-radius: 8px; width: 100%; font-weight: bold; transition: 0.3s; }
-        .post-btn-active:disabled { background: #262626; color: #8e8e8e; cursor: not-allowed; }
+        .tab-btn { flex: 1; text-align: center; padding: 12px; border-bottom: 2px solid transparent; opacity: 0.5; cursor: pointer; }
+        .tab-btn.active { border-bottom-color: #fff; opacity: 1; }
         #loader { height: 3px; background: #0095f6; width: 0%; position: fixed; top: 0; left: 0; z-index: 9999; transition: 0.3s; }
-        .divider { display: flex; align-items: center; text-align: center; color: #555; font-size: 12px; margin: 10px 0; }
-        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #333; }
-        .divider:not(:empty)::before { margin-right: .5em; }
-        .divider:not(:empty)::after { margin-left: .5em; }
+        .delete-btn { position: absolute; top: 5px; right: 5px; background: rgba(255,0,0,0.7); color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; z-index: 10; }
     </style>
 </head>
 <body>
@@ -26,7 +22,7 @@
     <div id="loader"></div>
 
     <div id="auth-layer" class="fixed inset-0 bg-black z-[9999] flex flex-col items-center justify-center p-6 text-center">
-        <h1 class="text-4xl italic font-bold mb-10 tracking-widest">SAINIWALAA</h1>
+        <h1 class="text-4xl italic font-bold mb-10 tracking-widest text-white">SAINIWALAA</h1>
         <button onclick="login()" class="w-full max-w-xs bg-white text-black font-bold p-3 rounded-lg flex items-center justify-center gap-3 active:scale-95 transition">
             <i class="fa-brands fa-google"></i> Login with Google
         </button>
@@ -41,52 +37,47 @@
             </div>
         </header>
 
-        <div id="feed-section" class="grid grid-cols-3 gap-0.5 pb-20"></div>
+        <div class="flex border-b border-zinc-900">
+            <div id="tab-feed" class="tab-btn active" onclick="switchTab('feed')"><i class="fa-solid fa-table-cells text-xl"></i></div>
+            <div id="tab-orders" class="tab-btn" onclick="switchTab('orders')"><i class="fa-solid fa-cart-shopping text-xl"></i></div>
+        </div>
+
+        <div id="section-feed" class="grid grid-cols-3 gap-0.5 pb-20"></div>
+        <div id="section-orders" class="hidden p-4 pb-20">
+            <h3 class="text-zinc-500 text-center mt-10">No Orders Found</h3>
+        </div>
     </div>
 
     <div id="upload-modal" class="modal">
         <div class="flex justify-between items-center mb-6">
             <span onclick="closeModal('upload-modal')" class="text-zinc-400 cursor-pointer">Cancel</span>
             <b class="text-lg">New Post</b>
-            <div class="w-10"></div> </div>
+            <button onclick="savePost()" id="post-btn" class="text-[#0095f6] font-bold">Post</button>
+        </div>
         
-        <div class="space-y-1">
-            <div class="flex gap-2 mb-4">
-                <div class="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-center relative">
+        <div class="space-y-2">
+            <div class="flex gap-2">
+                <div class="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-center">
                     <input type="file" id="post-file" class="hidden" accept="image/*,video/*" onchange="handleFileUpload(this)"/>
                     <label for="post-file" id="upload-label" class="cursor-pointer block">
-                        <i class="fa-solid fa-cloud-arrow-up text-xl mb-1"></i>
-                        <p class="text-[10px]">Upload File</p>
+                        <i class="fa-solid fa-camera text-xl"></i>
+                        <p class="text-[10px]">Upload</p>
                     </label>
                 </div>
-                <div class="flex-1 bg-zinc-900 border border-zinc-700 rounded-lg p-3 text-center">
-                    <i class="fa-solid fa-link text-xl mb-1"></i>
-                    <p class="text-[10px]">Direct Link</p>
-                </div>
+                <input id="post-videoUrl" class="flex-[2] ig-input mb-0" placeholder="Paste Media URL"/>
             </div>
 
-            <input id="post-videoUrl" class="ig-input" placeholder="Or Paste Video/Image URL here..."/>
-            
-            <div class="divider">Product Details</div>
-            
             <input id="post-productName" class="ig-input" placeholder="Product Name"/>
             <input id="post-price" class="ig-input" placeholder="Price (₹)"/>
-            
             <select id="post-platform" class="ig-input">
                 <option value="Amazon">Amazon</option>
                 <option value="Meesho">Meesho</option>
                 <option value="Flipkart">Flipkart</option>
                 <option value="Other">Other</option>
             </select>
-
-            <input id="post-productLink" class="ig-input" placeholder="Affiliate/Product Link"/>
-            <textarea id="post-description" class="ig-input h-24" placeholder="Write description..."></textarea>
-            
-            <input id="post-shopName" class="ig-input opacity-50" placeholder="Shop Name" readonly/>
-
-            <button onclick="savePost()" id="post-btn" class="post-btn-active mt-4">
-                Post Now
-            </button>
+            <input id="post-productLink" class="ig-input" placeholder="Product Link"/>
+            <textarea id="post-description" class="ig-input h-20" placeholder="Description"></textarea>
+            <input id="post-shopName" class="ig-input opacity-40" readonly/>
         </div>
     </div>
 
@@ -110,22 +101,26 @@
         const db = firebase.database();
         const storage = firebase.storage();
 
-        let uploadedFileUrl = "";
-
-        // Auth
-        function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-        function logout() { auth.signOut(); location.reload(); }
-
+        // Persistent Auth Logic
         auth.onAuthStateChanged(user => {
-            if(user) {
+            if (user) {
+                localStorage.setItem("isLoggedIn", "true");
                 document.getElementById('auth-layer').style.display = 'none';
                 document.getElementById('app').classList.remove('hidden');
-                syncUserData(user);
-                loadFeed();
+                syncUser(user);
+                loadFeed(user.uid);
+                loadOrders(user.uid);
+            } else {
+                localStorage.removeItem("isLoggedIn");
+                document.getElementById('auth-layer').style.display = 'flex';
+                document.getElementById('app').classList.add('hidden');
             }
         });
 
-        function syncUserData(user) {
+        function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+        function logout() { if(confirm("Logout?")) auth.signOut(); }
+
+        function syncUser(user) {
             db.ref('users/' + user.uid).on('value', snap => {
                 const data = snap.val();
                 const shop = data?.shopName || user.displayName.split(' ')[0] + " Studio";
@@ -134,81 +129,108 @@
             });
         }
 
-        // Handle File Upload
+        // Tab Switcher
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            if (tab === 'feed') {
+                document.getElementById('section-feed').classList.remove('hidden');
+                document.getElementById('section-orders').classList.add('hidden');
+            } else {
+                document.getElementById('section-feed').classList.add('hidden');
+                document.getElementById('section-orders').classList.remove('hidden');
+            }
+        }
+
+        // Handle Upload
         function handleFileUpload(input) {
             const file = input.files[0];
             if(!file) return;
-
             const ldr = document.getElementById('loader');
-            const label = document.getElementById('upload-label');
-            const btn = document.getElementById('post-btn');
-
-            btn.disabled = true; // Upload ke waqt button lock
-            ldr.style.width = "40%";
-            label.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-xl"></i><p class="text-[10px]">Uploading...</p>`;
-
+            ldr.style.width = "50%";
             const ref = storage.ref('posts/' + Date.now() + "_" + file.name);
             ref.put(file).then(s => s.ref.getDownloadURL().then(url => {
-                uploadedFileUrl = url;
                 document.getElementById('post-videoUrl').value = url;
-                label.innerHTML = `<i class="fa-solid fa-circle-check text-green-500 text-xl"></i><p class="text-[10px]">Done</p>`;
+                document.getElementById('upload-label').innerHTML = `<i class="fa-solid fa-check text-green-500"></i>`;
                 ldr.style.width = "100%";
-                btn.disabled = false;
-                setTimeout(() => ldr.style.width = "0%", 1000);
+                setTimeout(()=>ldr.style.width="0%", 1000);
             }));
         }
 
-        // Save Post Logic
+        // Save Post (with blocker)
         function savePost() {
             const btn = document.getElementById('post-btn');
-            const vidUrl = document.getElementById('post-videoUrl').value;
-            const prodName = document.getElementById('post-productName').value;
+            const url = document.getElementById('post-videoUrl').value;
+            if(!url) return alert("Select File or Paste Link");
 
-            if(!vidUrl || !prodName) return alert("Video URL and Product Name are required!");
-
-            // 1. Button Block (Response logic)
             btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Posting...`;
+            btn.innerHTML = "Posting...";
 
             const postId = "POST_" + Date.now();
-            const postData = {
+            const data = {
                 postId: postId,
                 uid: auth.currentUser.uid,
                 shopName: document.getElementById('post-shopName').value,
-                videoUrl: vidUrl,
-                productName: prodName,
+                videoUrl: url,
+                productName: document.getElementById('post-productName').value,
                 price: document.getElementById('post-price').value,
                 platform: document.getElementById('post-platform').value,
                 productLink: document.getElementById('post-productLink').value,
                 description: document.getElementById('post-description').value,
-                timestamp: new Date().toISOString()
+                timestamp: Date.now()
             };
 
-            // Firebase me save karein
-            db.ref('posts/' + postId).set(postData).then(() => {
-                alert("Post successfully published!");
+            db.ref('posts/' + postId).set(data).then(() => {
                 closeModal('upload-modal');
-                location.reload();
-            }).catch(err => {
-                alert("Error: " + err.message);
                 btn.disabled = false;
-                btn.innerText = "Post Now";
+                btn.innerHTML = "Post";
+                location.reload();
             });
         }
 
-        function loadFeed() {
-            db.ref('posts').orderByChild('uid').equalTo(auth.currentUser.uid).on('value', snap => {
-                const feed = document.getElementById('feed-section');
-                feed.innerHTML = "";
+        // Load Posts with Delete Button
+        function loadFeed(uid) {
+            db.ref('posts').orderByChild('uid').equalTo(uid).on('value', snap => {
+                const container = document.getElementById('section-feed');
+                container.innerHTML = "";
                 snap.forEach(child => {
                     const p = child.val();
-                    const isVideo = p.videoUrl.match(/\.(mp4|webm|ogg)/) || p.videoUrl.includes('video');
-                    feed.innerHTML += `
-                        <div class="aspect-square bg-zinc-900 border border-zinc-800 overflow-hidden relative">
-                            ${isVideo ? `<video src="${p.videoUrl}" class="w-full h-full object-cover"></video>` : `<img src="${p.videoUrl}" class="w-full h-full object-cover"/>`}
-                            <div class="absolute bottom-1 left-1 bg-black/60 text-[8px] px-1 rounded">₹${p.price}</div>
-                        </div>`;
+                    const isVideo = p.videoUrl.includes(".mp4") || p.videoUrl.includes("video");
+                    const div = document.createElement('div');
+                    div.className = "aspect-square relative border border-zinc-900 bg-zinc-900";
+                    div.innerHTML = `
+                        <button class="delete-btn" onclick="deletePost('${p.postId}')">Delete</button>
+                        ${isVideo ? `<video src="${p.videoUrl}" class="w-full h-full object-cover"></video>` : `<img src="${p.videoUrl}" class="w-full h-full object-cover"/>`}
+                        <div class="absolute bottom-0 w-full bg-black/50 text-[10px] p-1 truncate">${p.productName}</div>
+                    `;
+                    container.prepend(div);
                 });
+            });
+        }
+
+        function deletePost(id) {
+            if(confirm("Delete this post?")) {
+                db.ref('posts/' + id).remove().then(() => alert("Deleted"));
+            }
+        }
+
+        // Load Orders (Placeholder logic)
+        function loadOrders(uid) {
+            db.ref('orders').orderByChild('sellerUid').equalTo(uid).on('value', snap => {
+                const container = document.getElementById('section-orders');
+                if(snap.exists()) {
+                    container.innerHTML = "";
+                    snap.forEach(child => {
+                        const o = child.val();
+                        container.innerHTML += `
+                            <div class="bg-zinc-900 p-3 rounded-lg mb-2 border border-zinc-800">
+                                <p class="text-sm font-bold">${o.productName}</p>
+                                <p class="text-xs text-zinc-400">Buyer: ${o.buyerName}</p>
+                                <p class="text-xs text-green-500">₹${o.price} | ${o.status || 'Pending'}</p>
+                            </div>
+                        `;
+                    });
+                }
             });
         }
 
