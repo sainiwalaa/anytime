@@ -7,13 +7,14 @@
 <style>
 body{margin:0;font-family:Arial;background:#fafafa}
 .header{background:white;padding:15px;display:flex;justify-content:space-between;border-bottom:1px solid #ddd}
-.container{max-width:600px;margin:auto;background:white}
+.container{max-width:600px;margin:auto;background:white;padding-bottom:50px}
 .profile{padding:20px;text-align:center}
 .avatar{width:90px;height:90px;border-radius:50%;object-fit:cover}
 button{padding:10px 15px;margin:5px;border:1px solid #ccc;background:white;border-radius:6px;cursor:pointer}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-bottom:30px}
-.post{height:120px;background-size:cover;background-position:center}
-.info{font-size:12px;color:#777;margin-top:10px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:20px}
+.post{height:120px;background-size:cover;background-position:center;position:relative}
+.post-info{position:absolute;bottom:0;background:rgba(0,0,0,0.5);color:white;font-size:10px;width:100%;padding:2px;text-align:center}
+.info{font-size:12px;color:#777;margin-top:10px;text-align:center}
 </style>
 </head>
 <body>
@@ -31,9 +32,7 @@ button{padding:10px 15px;margin:5px;border:1px solid #ccc;background:white;borde
 <img id="avatar" class="avatar" src="https://via.placeholder.com/90">
 <h3 id="name">Creator</h3>
 <button onclick="uploadPost()">Upload Post</button>
-<div class="info">
-<span id="uid"></span>
-</div>
+<div class="info"><span id="uid"></span></div>
 </div>
 
 <div class="grid" id="postGrid"></div>
@@ -56,12 +55,9 @@ const firebaseConfig = {
   projectId: "sainiwalaainfulencer",
   storageBucket: "sainiwalaainfulencer.firebasestorage.app",
   messagingSenderId: "116125275008",
-  appId: "1:116125275008:web:dc09ab0c6ce0317436e765",
-  measurementId: "G-VCKE3S9S14"
+  appId: "1:116125275008:web:dc09ab0c6ce0317436e765"
 };
-
 firebase.initializeApp(firebaseConfig);
-
 const auth = firebase.auth();
 const storage = firebase.storage();
 const db = firebase.database();
@@ -70,69 +66,103 @@ const db = firebase.database();
 const API="https://script.google.com/macros/s/AKfycbxSg4X4HYjUoX9rfmnjU9lBUyv0aKtJB_pAp0K9z3A5NMHrhASg3aTNz-H3JnOa1twurA/exec";
 
 // Login/Logout
-function login(){ const provider=new firebase.auth.GoogleAuthProvider(); auth.signInWithPopup(provider); }
+function login(){ auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
 function logout(){ auth.signOut(); }
 
-// Auth listener
+// Auth state listener
 auth.onAuthStateChanged(user=>{
   if(user){
-    document.getElementById("name").innerText=user.displayName;
-    document.getElementById("avatar").src=user.photoURL;
-    document.getElementById("uid").innerText="UID: "+user.uid;
-    loadUserPosts(user.uid);
+    document.getElementById("name").innerText = user.displayName;
+    document.getElementById("avatar").src = user.photoURL;
+    document.getElementById("uid").innerText = "UID: "+user.uid;
+    loadProfile(user.uid);
+    loadPosts();
   } else {
-    document.getElementById("name").innerText="Creator";
-    document.getElementById("avatar").src="https://via.placeholder.com/90";
-    document.getElementById("uid").innerText="";
+    document.getElementById("name").innerText = "Creator";
+    document.getElementById("avatar").src = "https://via.placeholder.com/90";
+    document.getElementById("uid").innerText = "";
     document.getElementById("postGrid").innerHTML="";
   }
 });
+
+// Load user profile
+function loadProfile(uid){
+  fetch(API)
+    .then(r=>r.json())
+    .then(data=>{
+      data.forEach(row=>{
+        if(row[0]==uid){
+          document.getElementById("name").innerText = row[1] || "Creator";
+        }
+      });
+    });
+}
 
 // Upload post
 function uploadPost(){ document.getElementById("fileInput").click(); }
 
 document.getElementById("fileInput").addEventListener("change", function(){
-  const file=this.files[0];
-  const user=auth.currentUser;
-  if(!file||!user) return;
-
-  const ref=storage.ref("posts/"+user.uid+"/"+Date.now());
+  const file = this.files[0];
+  const user = auth.currentUser;
+  if(!file||!user)return;
+  const ref = storage.ref("posts/"+user.uid+"/"+Date.now());
   ref.put(file).then(snapshot=>{
     snapshot.ref.getDownloadURL().then(url=>{
-      const postId=Date.now();
-      // Push post metadata to Firebase DB
-      db.ref("posts/"+postId).set({
+      // Ask for extra details
+      const shopName = prompt("Shop Name:");
+      const videoLink = file.type.includes("video") ? url : "";
+      const price = prompt("Price:");
+      const platform = prompt("Platform (Amazon, Meesho...):");
+      const description = prompt("Description:");
+      const productLink = prompt("Product Link:");
+      const influenceContact = prompt("Influence Contact? (yes/no):");
+
+      const postData = {
         uid:user.uid,
+        shopName,
+        videoLink,
+        price,
+        platform,
+        description,
+        productLink,
+        influenceContact,
         media:url,
-        timestamp:postId
-      });
-      // Also push to Sheet API
-      fetch(`${API}?action=savePost&uid=${user.uid}&media=${encodeURIComponent(url)}`);
-      showPost(url);
+        timestamp:Date.now()
+      };
+
+      const id=Date.now();
+      db.ref("posts/"+id).set(postData);
+      showPost(postData);
     });
   });
 });
 
 // Show post
-function showPost(url){
-  const grid=document.getElementById("postGrid");
-  const post=document.createElement("div");
+function showPost(postData){
+  const grid = document.getElementById("postGrid");
+  const post = document.createElement("div");
   post.className="post";
-  post.style.backgroundImage="url("+url+")";
+  post.style.backgroundImage="url("+postData.media+")";
+
+  const info = document.createElement("div");
+  info.className="post-info";
+  info.innerText = postData.shopName + " | ₹"+postData.price;
+  post.appendChild(info);
+
   grid.prepend(post);
 }
 
-// Load posts for user
-function loadUserPosts(uid){
-  db.ref("posts").orderByChild("timestamp").on("value",snap=>{
+// Load posts
+function loadPosts(){
+  db.ref("posts").orderByChild("timestamp").limitToLast(10).on("value",snap=>{
     const grid=document.getElementById("postGrid");
     grid.innerHTML="";
-    const posts=[];
-    snap.forEach(p=>{ if(p.val().uid==uid) posts.push(p.val()); });
-    posts.sort((a,b)=>b.timestamp-a.timestamp); // newest first
-    posts.forEach(p=>showPost(p.media));
+    snap.forEach(p=>{
+      showPost(p.val());
+    });
   });
 }
 </script>
+
 </body>
 </html>
