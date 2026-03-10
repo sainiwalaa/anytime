@@ -15,8 +15,12 @@
         .tab-btn.active { border-bottom-color: #fff; opacity: 1; }
         #loader { height: 3px; background: #0095f6; width: 0%; position: fixed; top: 0; left: 0; z-index: 9999; transition: 0.3s; }
         .delete-btn { position: absolute; top: 5px; right: 5px; background: rgba(255,0,0,0.7); color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; z-index: 10; }
-        .profile-banner { height: 120px; background: linear-gradient(45deg, #121212, #333); border-radius: 12px; position: relative; overflow: hidden; }
-        .profile-pic { width: 80px; height: 80px; border-radius: 50%; border: 4px solid #000; position: absolute; bottom: -40px; left: 20px; background: #222; object-fit: cover; }
+        
+        /* Profile Styling */
+        .profile-banner { height: 160px; border-radius: 0 0 20px 20px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: bold; font-size: 24px; transition: 0.5s; }
+        .profile-pic-container { position: relative; width: 90px; height: 90px; margin-top: -45px; margin-left: 20px; z-index: 10; }
+        .profile-pic { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #000; background: #222; object-fit: cover; }
+        .edit-pic-btn { position: absolute; bottom: 0; right: 0; background: #0095f6; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid #000; }
     </style>
 </head>
 <body>
@@ -51,51 +55,85 @@
             <h3 class="text-zinc-500 mt-10">No Orders Found</h3>
         </div>
 
-        <div id="section-profile" class="hidden p-4 pb-20">
-            <div class="profile-banner mb-12">
-                <img id="p-banner-img" src="" class="w-full h-full object-cover hidden">
-                <img id="p-user-img" src="" class="profile-pic">
+        <div id="section-profile" class="hidden pb-20">
+            <div id="p-banner" class="profile-banner bg-zinc-800">
+                <span id="p-banner-text">Welcome to my Shop</span>
+                <img id="p-banner-img" src="" class="absolute inset-0 w-full h-full object-cover hidden">
             </div>
             
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <h2 id="p-name" class="text-2xl font-bold">---</h2>
-                    <p id="p-email" class="text-xs text-zinc-500">---</p>
-                </div>
-                <button onclick="openModal('edit-profile-modal')" class="bg-zinc-900 border border-zinc-700 px-4 py-1.5 rounded-lg text-sm font-bold">Edit Profile</button>
+            <div class="profile-pic-container">
+                <img id="p-user-img" src="https://via.placeholder.com/150" class="profile-pic">
+                <label for="edit-pic-file" class="edit-pic-btn cursor-pointer">
+                    <i class="fa-solid fa-camera"></i>
+                </label>
+                <input type="file" id="edit-pic-file" class="hidden" accept="image/*" onchange="handleFileUpload(this, 'p-user-img', true)"/>
             </div>
 
-            <p id="p-bio" class="text-sm text-zinc-300 mb-4 italic">No bio added yet.</p>
+            <div class="p-4 pt-2">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h2 id="p-name" class="text-2xl font-bold">---</h2>
+                        <p id="p-email" class="text-xs text-zinc-500">---</p>
+                    </div>
+                    <button onclick="openModal('edit-profile-modal')" class="bg-white text-black px-4 py-1.5 rounded-full text-sm font-bold">Edit Profile</button>
+                </div>
 
-            <div class="grid grid-cols-2 gap-3 mb-6">
-                <div class="bg-zinc-900 p-3 rounded-lg border border-zinc-800">
-                    <p class="text-[10px] text-zinc-500 uppercase">Shop Name</p>
-                    <p id="p-shopName" class="text-sm font-bold">---</p>
+                <p id="p-bio" class="text-sm text-zinc-300 mb-4 italic">No bio added yet.</p>
+
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="bg-zinc-900 p-3 rounded-xl border border-zinc-800">
+                        <p class="text-[10px] text-zinc-500 uppercase">Shop Name</p>
+                        <p id="p-shopName" class="text-sm font-bold">---</p>
+                    </div>
+                    <div class="bg-zinc-900 p-3 rounded-xl border border-zinc-800">
+                        <p class="text-[10px] text-zinc-500 uppercase">City</p>
+                        <p id="p-city" class="text-sm font-bold">---</p>
+                    </div>
                 </div>
-                <div class="bg-zinc-900 p-3 rounded-lg border border-zinc-800">
-                    <p class="text-[10px] text-zinc-500 uppercase">Contact</p>
-                    <p id="p-contact" class="text-sm font-bold">---</p>
+
+                <div class="space-y-2 border-t border-zinc-900 pt-4">
+                    <div id="p-social-1" class="flex items-center gap-3 text-sm opacity-70"><i class="fa-brands fa-instagram"></i> Instagram Not Linked</div>
+                    <div id="p-social-2" class="flex items-center gap-3 text-sm opacity-70"><i class="fa-brands fa-youtube"></i> YouTube Not Linked</div>
                 </div>
-                <div class="bg-zinc-900 p-3 rounded-lg border border-zinc-800">
-                    <p class="text-[10px] text-zinc-500 uppercase">City</p>
-                    <p id="p-city" class="text-sm font-bold">---</p>
-                </div>
-                <div class="bg-zinc-900 p-3 rounded-lg border border-zinc-800">
-                    <p class="text-[10px] text-zinc-500 uppercase">Influence</p>
-                    <p id="p-influence" class="text-sm font-bold text-blue-400">---</p>
+
+                <div class="mt-8 p-4 bg-zinc-900/50 rounded-xl border border-dashed border-zinc-800">
+                     <p class="text-xs text-zinc-500">UID: <span id="p-uid" class="select-all">---</span></p>
+                     <p class="text-xs text-zinc-500">Joined: <span id="p-createdAt">---</span></p>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="space-y-2 border-t border-zinc-900 pt-4">
-                <div id="p-social-1" class="flex items-center gap-3 text-sm opacity-70"><i class="fa-brands fa-instagram"></i> <span>Not Linked</span></div>
-                <div id="p-social-2" class="flex items-center gap-3 text-sm opacity-70"><i class="fa-brands fa-youtube"></i> <span>Not Linked</span></div>
-                <div id="p-social-3" class="flex items-center gap-3 text-sm opacity-70"><i class="fa-solid fa-globe"></i> <span>Not Linked</span></div>
+    <div id="edit-profile-modal" class="modal">
+        <div class="flex justify-between items-center mb-6">
+            <span onclick="closeModal('edit-profile-modal')" class="text-zinc-400 cursor-pointer">Back</span>
+            <b class="text-lg">Customize Studio</b>
+            <button onclick="updateProfile()" id="update-btn" class="text-blue-500 font-bold">Save</button>
+        </div>
+        
+        <div class="space-y-4">
+            <div class="p-4 bg-zinc-900 rounded-xl border border-zinc-800">
+                <p class="text-xs font-bold mb-3 text-zinc-400">BANNER DESIGN</p>
+                <input id="edit-banner-text" class="ig-input" placeholder="Banner Text (e.g. Best Deals Here)"/>
+                <div class="flex gap-2 mb-3">
+                    <input type="color" id="edit-banner-bg" class="w-12 h-10 bg-transparent" value="#1e1e1e"/>
+                    <input type="color" id="edit-banner-color" class="w-12 h-10 bg-transparent" value="#ffffff"/>
+                    <label class="flex-1 bg-zinc-800 flex items-center justify-center rounded-lg text-xs cursor-pointer">
+                        <i class="fa-solid fa-image mr-2"></i> Or Upload Image
+                        <input type="file" class="hidden" accept="image/*" onchange="handleFileUpload(this, 'temp-banner-url')"/>
+                    </label>
+                </div>
+                <input type="hidden" id="temp-banner-url"/>
             </div>
 
-            <div class="mt-6 text-[10px] text-zinc-700">
-                <p>UID: <span id="p-uid">---</span></p>
-                <p>Member Since: <span id="p-createdAt">---</span></p>
+            <input id="edit-shopName" class="ig-input" placeholder="Shop Name"/>
+            <textarea id="edit-bio" class="ig-input h-16" placeholder="Bio"></textarea>
+            <div class="grid grid-cols-2 gap-2">
+                <input id="edit-contact" class="ig-input" placeholder="Contact No"/>
+                <input id="edit-city" class="ig-input" placeholder="City"/>
             </div>
+            <input id="edit-social-1" class="ig-input" placeholder="Instagram Profile Link"/>
+            <input id="edit-social-2" class="ig-input" placeholder="YouTube Channel Link"/>
         </div>
     </div>
 
@@ -118,34 +156,7 @@
             </div>
             <input id="post-productName" class="ig-input" placeholder="Product Name"/>
             <input id="post-price" class="ig-input" placeholder="Price (₹)"/>
-            <select id="post-platform" class="ig-input">
-                <option value="Amazon">Amazon</option><option value="Meesho">Meesho</option><option value="Flipkart">Flipkart</option>
-            </select>
             <input id="post-productLink" class="ig-input" placeholder="Product Link"/>
-            <textarea id="post-description" class="ig-input h-20" placeholder="Description"></textarea>
-        </div>
-    </div>
-
-    <div id="edit-profile-modal" class="modal">
-        <div class="flex justify-between items-center mb-6">
-            <span onclick="closeModal('edit-profile-modal')" class="text-zinc-400 cursor-pointer">Back</span>
-            <b class="text-lg">Edit Profile</b>
-            <button onclick="updateProfile()" id="update-btn" class="text-green-500 font-bold">Save</button>
-        </div>
-        <div class="space-y-3">
-            <input id="edit-shopName" class="ig-input" placeholder="Shop Name"/>
-            <textarea id="edit-bio" class="ig-input h-16" placeholder="Your Bio"></textarea>
-            <input id="edit-contact" class="ig-input" placeholder="WhatsApp Number"/>
-            <input id="edit-city" class="ig-input" placeholder="City"/>
-            <select id="edit-influence" class="ig-input">
-                <option value="Nano (0-10k)">Nano (0-10k)</option>
-                <option value="Micro (10k-100k)">Micro (10k-100k)</option>
-                <option value="Mega (100k+)">Mega (100k+)</option>
-            </select>
-            <div class="divider text-xs text-zinc-500">Social Links</div>
-            <input id="edit-social-1" class="ig-input" placeholder="Instagram URL"/>
-            <input id="edit-social-2" class="ig-input" placeholder="YouTube URL"/>
-            <input id="edit-social-3" class="ig-input" placeholder="Website/Other"/>
         </div>
     </div>
 
@@ -175,7 +186,6 @@
                 document.getElementById('app').classList.remove('hidden');
                 initUser(user);
                 loadFeed(user.uid);
-                loadOrders(user.uid);
             } else {
                 document.getElementById('auth-layer').style.display = 'flex';
                 document.getElementById('app').classList.add('hidden');
@@ -185,49 +195,49 @@
         function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
         function logout() { if(confirm("Logout?")) auth.signOut(); }
 
-        // --- Profile Logic ---
         function initUser(user) {
             const userRef = db.ref('users/' + user.uid);
             userRef.on('value', snap => {
                 const data = snap.val();
                 if (!data) {
-                    // Create New User entry
                     userRef.set({
-                        uid: user.uid,
-                        name: user.displayName,
-                        email: user.email,
-                        pic: user.photoURL,
-                        shopName: user.displayName.split(' ')[0] + " Studio",
+                        uid: user.uid, name: user.displayName, email: user.email,
+                        pic: user.photoURL, shopName: user.displayName.split(' ')[0] + " Studio",
                         createdAt: new Date().toLocaleDateString(),
-                        influence: 'Nano (0-10k)'
+                        bannerBg: "#1e1e1e", bannerTextColor: "#ffffff"
                     });
                 } else {
-                    // Fill Profile UI
-                    document.getElementById('shop-label-header').innerText = data.shopName;
+                    // UI Profile Sync
                     document.getElementById('p-name').innerText = data.name;
                     document.getElementById('p-email').innerText = data.email;
-                    document.getElementById('p-user-img').src = data.pic;
+                    document.getElementById('p-user-img').src = data.pic || user.photoURL;
                     document.getElementById('p-shopName').innerText = data.shopName;
+                    document.getElementById('shop-label-header').innerText = data.shopName;
                     document.getElementById('p-uid').innerText = data.uid;
                     document.getElementById('p-createdAt').innerText = data.createdAt;
-                    document.getElementById('p-bio').innerText = data.bio || "No bio added yet.";
-                    document.getElementById('p-contact').innerText = data.contact || "N/A";
-                    document.getElementById('p-city').innerText = data.city || "N/A";
-                    document.getElementById('p-influence').innerText = data.influence;
+                    document.getElementById('p-bio').innerText = data.bio || "Welcome to my studio!";
+                    document.getElementById('p-city').innerText = data.city || "Not Set";
+                    
+                    // Banner Sync
+                    const banner = document.getElementById('p-banner');
+                    const bImg = document.getElementById('p-banner-img');
+                    const bTxt = document.getElementById('p-banner-text');
+                    
+                    if(data.bannerUrl) {
+                        bImg.src = data.bannerUrl;
+                        bImg.classList.remove('hidden');
+                        bTxt.classList.add('hidden');
+                    } else {
+                        bImg.classList.add('hidden');
+                        bTxt.classList.remove('hidden');
+                        bTxt.innerText = data.bannerText || "Creator Studio";
+                        banner.style.backgroundColor = data.bannerBg || "#1e1e1e";
+                        bTxt.style.color = data.bannerTextColor || "#ffffff";
+                    }
 
-                    if(data.social1) document.getElementById('p-social-1').innerHTML = `<i class="fa-brands fa-instagram text-pink-500"></i> ${data.social1.split('/')[3] || 'Linked'}`;
-                    if(data.social2) document.getElementById('p-social-2').innerHTML = `<i class="fa-brands fa-youtube text-red-500"></i> Linked`;
-                    if(data.social3) document.getElementById('p-social-3').innerHTML = `<i class="fa-solid fa-globe text-blue-400"></i> Website`;
-
-                    // Fill Edit Inputs
-                    document.getElementById('edit-shopName').value = data.shopName;
-                    document.getElementById('edit-bio').value = data.bio || "";
-                    document.getElementById('edit-contact').value = data.contact || "";
-                    document.getElementById('edit-city').value = data.city || "";
-                    document.getElementById('edit-influence').value = data.influence;
-                    document.getElementById('edit-social-1').value = data.social1 || "";
-                    document.getElementById('edit-social-2').value = data.social2 || "";
-                    document.getElementById('edit-social-3').value = data.social3 || "";
+                    // Social Link Sync
+                    if(data.social1) document.getElementById('p-social-1').innerHTML = `<i class="fa-brands fa-instagram text-pink-500"></i> Instagram Linked`;
+                    if(data.social2) document.getElementById('p-social-2').innerHTML = `<i class="fa-brands fa-youtube text-red-500"></i> YouTube Linked`;
                 }
             });
         }
@@ -235,22 +245,42 @@
         function updateProfile() {
             const btn = document.getElementById('update-btn');
             btn.innerText = "Saving...";
-            db.ref('users/' + auth.currentUser.uid).update({
+            const updates = {
                 shopName: document.getElementById('edit-shopName').value,
                 bio: document.getElementById('edit-bio').value,
                 contact: document.getElementById('edit-contact').value,
                 city: document.getElementById('edit-city').value,
-                influence: document.getElementById('edit-influence').value,
                 social1: document.getElementById('edit-social-1').value,
                 social2: document.getElementById('edit-social-2').value,
-                social3: document.getElementById('edit-social-3').value,
-            }).then(() => {
+                bannerText: document.getElementById('edit-banner-text').value,
+                bannerBg: document.getElementById('edit-banner-bg').value,
+                bannerTextColor: document.getElementById('edit-banner-color').value,
+                bannerUrl: document.getElementById('temp-banner-url').value
+            };
+            db.ref('users/' + auth.currentUser.uid).update(updates).then(() => {
                 btn.innerText = "Save";
                 closeModal('edit-profile-modal');
             });
         }
 
-        // --- Feed & Posts Logic (Restored) ---
+        function handleFileUpload(input, targetId, isProfilePic = false) {
+            const file = input.files[0];
+            if(!file) return;
+            const ldr = document.getElementById('loader');
+            ldr.style.width = "50%";
+            const ref = storage.ref('users/' + auth.currentUser.uid + "/" + (isProfilePic ? 'profile' : Date.now()));
+            ref.put(file).then(s => s.ref.getDownloadURL().then(url => {
+                if(isProfilePic) {
+                    db.ref('users/' + auth.currentUser.uid).update({ pic: url });
+                } else {
+                    document.getElementById(targetId).value = url;
+                }
+                ldr.style.width = "100%";
+                setTimeout(()=>ldr.style.width="0%", 1000);
+            }));
+        }
+
+        // Previous functions for feed/tabs
         function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('#section-feed, #section-orders, #section-profile').forEach(el => el.classList.add('hidden'));
@@ -258,39 +288,18 @@
             document.getElementById('section-' + tab).classList.remove('hidden');
         }
 
-        function handleFileUpload(input, targetId) {
-            const file = input.files[0];
-            if(!file) return;
-            const ldr = document.getElementById('loader');
-            ldr.style.width = "50%";
-            const ref = storage.ref('files/' + Date.now() + "_" + file.name);
-            ref.put(file).then(s => s.ref.getDownloadURL().then(url => {
-                document.getElementById(targetId).value = url;
-                ldr.style.width = "100%";
-                setTimeout(()=>ldr.style.width="0%", 1000);
-            }));
-        }
-
         function savePost() {
             const btn = document.getElementById('post-btn');
             const url = document.getElementById('post-videoUrl').value;
-            if(!url) return alert("Select File");
+            if(!url) return alert("Upload Media");
             btn.disabled = true;
             const postId = "POST_" + Date.now();
-            const data = {
+            db.ref('posts/' + postId).set({
                 postId: postId, uid: auth.currentUser.uid,
-                shopName: document.getElementById('p-shopName').innerText,
                 videoUrl: url, productName: document.getElementById('post-productName').value,
                 price: document.getElementById('post-price').value,
-                platform: document.getElementById('post-platform').value,
-                productLink: document.getElementById('post-productLink').value,
-                description: document.getElementById('post-description').value,
                 timestamp: Date.now()
-            };
-            db.ref('posts/' + postId).set(data).then(() => {
-                closeModal('upload-modal');
-                btn.disabled = false;
-            });
+            }).then(() => { closeModal('upload-modal'); btn.disabled = false; });
         }
 
         function loadFeed(uid) {
@@ -299,18 +308,16 @@
                 container.innerHTML = "";
                 snap.forEach(child => {
                     const p = child.val();
-                    const isVid = p.videoUrl.includes(".mp4") || p.videoUrl.includes("video");
-                    container.innerHTML += `
-                        <div class="aspect-square relative border border-zinc-900 bg-zinc-900">
-                            <button class="delete-btn" onclick="deletePost('${p.postId}')">Delete</button>
-                            ${isVid ? `<video src="${p.videoUrl}" class="w-full h-full object-cover"></video>` : `<img src="${p.videoUrl}" class="w-full h-full object-cover"/>`}
-                        </div>`;
+                    const isVid = p.videoUrl.includes(".mp4");
+                    container.innerHTML += `<div class="aspect-square relative border border-zinc-900 bg-zinc-900">
+                        <button class="delete-btn" onclick="deletePost('${p.postId}')">Delete</button>
+                        ${isVid ? `<video src="${p.videoUrl}" class="w-full h-full object-cover"></video>` : `<img src="${p.videoUrl}" class="w-full h-full object-cover"/>`}
+                    </div>`;
                 });
             });
         }
 
         function deletePost(id) { if(confirm("Delete?")) db.ref('posts/' + id).remove(); }
-        function loadOrders(uid) { /* Order Logic Sync Here */ }
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
     </script>
