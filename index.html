@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Sainiwalaa Creator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <style>
 body{margin:0;font-family:Arial;background:#fafafa}
 .header{background:white;padding:15px;display:flex;justify-content:space-between;border-bottom:1px solid #ddd}
@@ -17,7 +16,6 @@ button{padding:10px 15px;margin:5px;border:1px solid #ccc;background:white;borde
 .info{font-size:12px;color:#777;margin-top:10px}
 </style>
 </head>
-
 <body>
 
 <div class="header">
@@ -58,7 +56,8 @@ const firebaseConfig = {
   projectId: "sainiwalaainfulencer",
   storageBucket: "sainiwalaainfulencer.firebasestorage.app",
   messagingSenderId: "116125275008",
-  appId: "1:116125275008:web:dc09ab0c6ce0317436e765"
+  appId: "1:116125275008:web:dc09ab0c6ce0317436e765",
+  measurementId: "G-VCKE3S9S14"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -68,86 +67,72 @@ const storage = firebase.storage();
 const db = firebase.database();
 
 // Google Apps Script API
-const API="https://script.google.com/macros/s/AKfycbxJVZqW9tPedLvSpYNoVWMy5HF43mlsZCpRoswdcXheYk5BnTY_1FhHzV49DWzJm1v8LQ/exec";
+const API="https://script.google.com/macros/s/AKfycbxSg4X4HYjUoX9rfmnjU9lBUyv0aKtJB_pAp0K9z3A5NMHrhASg3aTNz-H3JnOa1twurA/exec";
 
-// Login/Logout functions
-function login(){
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider);
-}
-function logout(){
-  auth.signOut();
-}
+// Login/Logout
+function login(){ const provider=new firebase.auth.GoogleAuthProvider(); auth.signInWithPopup(provider); }
+function logout(){ auth.signOut(); }
 
-// Auth state listener
+// Auth listener
 auth.onAuthStateChanged(user=>{
   if(user){
-    document.getElementById("name").innerText = user.displayName;
-    document.getElementById("avatar").src = user.photoURL;
-    document.getElementById("uid").innerText = "UID: " + user.uid;
-    loadProfile(user.uid);
-    loadPosts();
+    document.getElementById("name").innerText=user.displayName;
+    document.getElementById("avatar").src=user.photoURL;
+    document.getElementById("uid").innerText="UID: "+user.uid;
+    loadUserPosts(user.uid);
   } else {
-    document.getElementById("name").innerText = "Creator";
-    document.getElementById("avatar").src = "https://via.placeholder.com/90";
-    document.getElementById("uid").innerText = "";
-    document.getElementById("postGrid").innerHTML = "";
+    document.getElementById("name").innerText="Creator";
+    document.getElementById("avatar").src="https://via.placeholder.com/90";
+    document.getElementById("uid").innerText="";
+    document.getElementById("postGrid").innerHTML="";
   }
 });
 
-// Load user profile from Sheet API
-function loadProfile(uid){
-  fetch(API)
-    .then(r => r.json())
-    .then(data => {
-      data.forEach(row => {
-        if(row[0] == uid){
-          document.getElementById("name").innerText = row[3] || "Creator";
-        }
-      })
-    });
-}
-
 // Upload post
-function uploadPost(){
-  document.getElementById("fileInput").click();
-}
+function uploadPost(){ document.getElementById("fileInput").click(); }
 
 document.getElementById("fileInput").addEventListener("change", function(){
-  const file = this.files[0];
-  const user = auth.currentUser;
-  if(!file || !user) return;
+  const file=this.files[0];
+  const user=auth.currentUser;
+  if(!file||!user) return;
 
-  const ref = storage.ref("posts/" + user.uid + "/" + Date.now());
-  ref.put(file).then(snapshot => {
-    snapshot.ref.getDownloadURL().then(url => {
-      const id = Date.now();
-      db.ref("posts/" + id).set({uid: user.uid, media: url});
+  const ref=storage.ref("posts/"+user.uid+"/"+Date.now());
+  ref.put(file).then(snapshot=>{
+    snapshot.ref.getDownloadURL().then(url=>{
+      const postId=Date.now();
+      // Push post metadata to Firebase DB
+      db.ref("posts/"+postId).set({
+        uid:user.uid,
+        media:url,
+        timestamp:postId
+      });
+      // Also push to Sheet API
+      fetch(`${API}?action=savePost&uid=${user.uid}&media=${encodeURIComponent(url)}`);
       showPost(url);
     });
   });
 });
 
-// Show post in grid
+// Show post
 function showPost(url){
-  const grid = document.getElementById("postGrid");
-  const post = document.createElement("div");
-  post.className = "post";
-  post.style.backgroundImage = "url("+url+")";
+  const grid=document.getElementById("postGrid");
+  const post=document.createElement("div");
+  post.className="post";
+  post.style.backgroundImage="url("+url+")";
   grid.prepend(post);
 }
 
-// Load all posts
-function loadPosts(){
-  db.ref("posts").on("value", snap => {
-    const grid = document.getElementById("postGrid");
-    grid.innerHTML = "";
-    snap.forEach(p => {
-      showPost(p.val().media);
-    });
+// Load posts for user
+function loadUserPosts(uid){
+  db.ref("posts").orderByChild("timestamp").on("value",snap=>{
+    const grid=document.getElementById("postGrid");
+    grid.innerHTML="";
+    const posts=[];
+    snap.forEach(p=>{ if(p.val().uid==uid) posts.push(p.val()); });
+    posts.sort((a,b)=>b.timestamp-a.timestamp); // newest first
+    posts.forEach(p=>showPost(p.media));
   });
 }
 </script>
-
 </body>
 </html>
