@@ -3,95 +3,107 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
-    <title>Sainiwalaa Studio | Secure Login</title>
+    <title>Sainiwalaa | Creator Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
     <style>
-        body { background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, sans-serif; transition: 0.3s; }
-        .auth-card { background: #121212; border: 1px solid #262626; border-radius: 12px; padding: 25px; width: 100%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .ig-input { background: #1a1a1a; border: 1px solid #363636; padding: 12px; border-radius: 6px; width: 100%; margin-bottom: 12px; color: #fff; font-size: 14px; outline: none; }
-        .ig-input:focus { border-color: #0095f6; }
-        .btn-primary { background: #0095f6; color: white; font-weight: bold; padding: 12px; width: 100%; border-radius: 8px; margin-top: 10px; transition: 0.2s; }
-        .btn-primary:active { opacity: 0.7; transform: scale(0.98); }
-        .link-text { color: #0095f6; font-size: 13px; cursor: pointer; font-weight: 600; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes scrollText { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        
+        body { background: #050505; color: #fff; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        
+        .logo-spin { animation: spin 4s linear infinite; }
+        .marquee-container { background: #111; overflow: hidden; white-space: nowrap; padding: 10px 0; border-top: 1px solid #222; border-bottom: 1px solid #222; }
+        .marquee-text { display: inline-block; animation: scrollText 15s linear infinite; color: #0095f6; font-weight: bold; font-size: 14px; }
+        
+        .listing-card { background: #121212; border: 1px solid #262626; border-radius: 20px; padding: 25px; margin-top: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+        .input-box { background: #1a1a1a; border: 1px solid #333; padding: 14px; border-radius: 10px; width: 100%; margin-bottom: 15px; color: #fff; outline: none; transition: 0.3s; }
+        .input-box:focus { border-color: #0095f6; box-shadow: 0 0 10px rgba(0,149,246,0.2); }
+        
+        .send-btn { background: linear-gradient(45deg, #0095f6, #00d4ff); color: #fff; font-weight: 800; padding: 15px; width: 100%; border-radius: 12px; font-size: 16px; display: flex; items-center; justify-content: center; gap: 10px; transition: 0.3s; }
+        .send-btn:active { transform: scale(0.95); opacity: 0.8; }
+        
+        #progress-bar { height: 4px; background: #0095f6; width: 0%; position: fixed; top: 0; left: 0; z-index: 1000; transition: 0.3s; }
         .hidden { display: none !important; }
-        #loader { height: 3px; background: linear-gradient(to right, #0095f6, #00d4ff); width: 0%; position: fixed; top: 0; left: 0; z-index: 9999; transition: 0.4s; }
-        .profile-pic { width: 100px; height: 100px; border-radius: 50%; border: 3px solid #262626; object-fit: cover; margin: 0 auto 15px; }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
+<body>
 
-    <div id="loader"></div>
+    <div id="progress-bar"></div>
 
-    <div id="auth-section" class="flex flex-col items-center w-full">
-        <h1 class="text-4xl font-black italic mb-10 tracking-tighter text-white">SAINIWALAA</h1>
-        
-        <div id="login-form" class="auth-card">
-            <h2 class="text-center font-bold mb-6 text-zinc-400">Login to Studio</h2>
-            <input type="email" id="login-email" class="ig-input" placeholder="Email Address">
-            <input type="password" id="login-pass" class="ig-input" placeholder="Password">
-            <button onclick="handleLogin()" class="btn-primary">Log In</button>
-            <div class="mt-6 text-center space-y-2">
-                <p class="text-xs text-zinc-500">Don't have an account? <span class="link-text" onclick="showAuth('register')">Sign Up</span></p>
-                <p class="text-xs text-zinc-500"><span class="link-text" onclick="showAuth('reset')">Forgot Password?</span></p>
-            </div>
-        </div>
-
-        <div id="register-form" class="auth-card hidden">
-            <h2 class="text-center font-bold mb-6 text-zinc-400">Create Account</h2>
-            <input type="text" id="reg-name" class="ig-input" placeholder="Your Full Name">
-            <input type="email" id="reg-email" class="ig-input" placeholder="Email Address">
-            <input type="password" id="reg-pass" class="ig-input" placeholder="Create Password">
-            <button onclick="handleRegister()" class="btn-primary">Register Now</button>
-            <p class="mt-6 text-center text-xs text-zinc-500">Already have an account? <span class="link-text" onclick="showAuth('login')">Log In</span></p>
-        </div>
-
-        <div id="reset-form" class="auth-card hidden">
-            <h2 class="text-center font-bold mb-4 text-zinc-400">Reset Password</h2>
-            <p class="text-xs text-zinc-500 mb-6 text-center">We'll send a recovery link to your email.</p>
-            <input type="email" id="reset-email" class="ig-input" placeholder="Enter your email">
-            <button onclick="handleReset()" class="btn-primary">Send Link</button>
-            <p class="mt-6 text-center text-xs link-text" onclick="showAuth('login')">Back to Login</p>
+    <div id="auth-section" class="flex flex-col items-center justify-center min-h-screen p-6">
+        <h1 class="text-4xl font-black italic mb-8 tracking-tighter">SAINIWALAA</h1>
+        <div id="login-container" class="w-full max-w-sm bg-zinc-900 p-8 rounded-3xl border border-zinc-800">
+            <input type="email" id="email" class="input-box" placeholder="Email">
+            <input type="password" id="pass" class="input-box" placeholder="Password">
+            <button onclick="login()" class="send-btn">Login to Dashboard</button>
         </div>
     </div>
 
-    <div id="app-section" class="hidden fixed inset-0 bg-black overflow-y-auto">
-        <header class="p-4 border-b border-zinc-900 flex justify-between items-center bg-black/90 backdrop-blur-md sticky top-0 z-50">
-            <span class="font-black italic text-xl tracking-tighter" id="display-shop">STUDIO</span>
-            <button onclick="logout()" class="bg-zinc-900 px-4 py-1.5 rounded-full text-red-500 font-bold text-xs border border-zinc-800">Logout</button>
-        </header>
+    <div id="app-section" class="hidden min-h-screen pb-10">
         
-        <main class="max-w-md mx-auto p-6">
-            <div class="text-center mt-4">
-                <div class="relative inline-block">
-                    <img id="display-pic" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="profile-pic">
+        <header class="p-4 flex justify-between items-center bg-black/80 backdrop-blur-md sticky top-0 z-50 border-b border-zinc-900">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-cyan-400 rounded-full flex items-center justify-center logo-spin">
+                    <i class="fa-solid fa-s text-white text-xl"></i>
                 </div>
-                <h2 id="display-name" class="text-2xl font-bold tracking-tight">---</h2>
-                <p id="display-email" class="text-zinc-500 text-sm mt-1">---</p>
+                <span class="font-black italic text-xl tracking-tighter">SAINIWALAA</span>
+            </div>
+            <button onclick="logout()" class="text-zinc-500 text-xs font-bold border border-zinc-800 px-3 py-1 rounded-lg">LOGOUT</button>
+        </header>
+
+        <div class="marquee-container">
+            <div class="marquee-text">
+                🔥 BEST MEESHO DEALS • 🛍️ FLIPKART BIG SELL • 📦 AMAZON FINDS • 👗 WOMEN FASHION • 🧸 KIDS SPECIAL • 🚀 PRODUCT GROW • 💸 HUGE DISCOUNTS • 🏷️ TRENDING BLOGS •
+            </div>
+        </div>
+
+        <main class="max-w-xl mx-auto p-4">
+            
+            <div class="mt-6 px-2">
+                <h2 class="text-2xl font-bold bg-gradient-to-r from-white to-zinc-500 bg-clip-text text-transparent">List Your Product on Blog</h2>
+                <p class="text-zinc-500 text-sm mt-1">Fill the details below to grow your product reach.</p>
+            </div>
+
+            <div class="listing-card">
+                <label class="text-[10px] uppercase font-bold text-zinc-500 ml-1">Product Identity</label>
+                <input type="text" id="p-name" class="input-box" placeholder="Product Name (e.g. Luxury Watch)">
                 
-                <div class="grid grid-cols-2 gap-4 mt-8">
-                    <div class="bg-zinc-900 p-4 rounded-2xl border border-zinc-800">
-                        <b class="block text-xl">0</b>
-                        <span class="text-[10px] text-zinc-500 uppercase font-bold">Followers</span>
+                <label class="text-[10px] uppercase font-bold text-zinc-500 ml-1">Media (Video/Image)</label>
+                <div class="flex gap-2 mb-4">
+                    <button onclick="document.getElementById('p-file').click()" class="flex-1 bg-zinc-800 p-3 rounded-lg text-xs font-bold border border-zinc-700">
+                        <i class="fa-solid fa-cloud-arrow-up mr-2 text-blue-400"></i>UPLOAD FILE
+                    </button>
+                    <input type="file" id="p-file" class="hidden" accept="video/*,image/*" onchange="uploadMedia(this)">
+                    <input type="text" id="p-url" class="flex-[2] bg-zinc-800 p-3 rounded-lg text-xs outline-none border border-zinc-700" placeholder="Or Paste URL Link">
+                </div>
+
+                <label class="text-[10px] uppercase font-bold text-zinc-500 ml-1">About Product</label>
+                <textarea id="p-desc" class="input-box h-24" placeholder="Write a catchy description..."></textarea>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] uppercase font-bold text-zinc-500 ml-1">Price (₹)</label>
+                        <input type="number" id="p-price" class="input-box" placeholder="499">
                     </div>
-                    <div class="bg-zinc-900 p-4 rounded-2xl border border-zinc-800">
-                        <b class="block text-xl text-blue-500">PRO</b>
-                        <span class="text-[10px] text-zinc-500 uppercase font-bold">Status</span>
+                    <div>
+                        <label class="text-[10px] uppercase font-bold text-zinc-500 ml-1">Platform</label>
+                        <select id="p-platform" class="input-box">
+                            <option>Amazon</option>
+                            <option>Meesho</option>
+                            <option>Flipkart</option>
+                            <option>Myntra</option>
+                            <option>Other</option>
+                        </select>
                     </div>
                 </div>
 
-                <div class="mt-8 p-6 bg-gradient-to-b from-zinc-900 to-black rounded-3xl border border-zinc-800 text-left">
-                    <h3 class="text-sm font-bold text-zinc-400 mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-circle-info text-blue-500"></i> Account Details
-                    </h3>
-                    <div class="space-y-3 text-xs">
-                        <p class="flex justify-between"><span class="text-zinc-500">Creator ID:</span> <span id="display-uid" class="font-mono text-[10px]">...</span></p>
-                        <p class="flex justify-between"><span class="text-zinc-500">Shop Name:</span> <span class="text-zinc-300" id="info-shop">...</span></p>
-                        <p class="flex justify-between"><span class="text-zinc-500">Security:</span> <span class="text-green-500">Encrypted</span></p>
-                    </div>
-                </div>
-                
-                <p class="text-[10px] text-zinc-600 mt-10">© 2026 SAINIWALAA CREATOR STUDIO</p>
+                <label class="text-[10px] uppercase font-bold text-zinc-500 ml-1">Buy Link</label>
+                <input type="text" id="p-link" class="input-box" placeholder="https://amzn.to/example">
+
+                <button onclick="publishPost()" id="send-btn" class="send-btn mt-4">
+                    <i class="fa-solid fa-paper-plane"></i> SEND TO BLOG FEED
+                </button>
             </div>
         </main>
     </div>
@@ -99,9 +111,10 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
     <script>
-        // --- Firebase Configuration ---
+        // Firebase Config (Keep your original config here)
         const firebaseConfig = {
             apiKey: "AIzaSyCm-5fJ49MxP0MFT8dDIkptue15x_GaaYc",
             authDomain: "sainiwalaainfulencer.firebaseapp.com",
@@ -114,107 +127,84 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
+        const storage = firebase.storage();
 
-        // --- Auth State Monitor (Fixes Undefined) ---
+        // --- Logic: Auth Check ---
         auth.onAuthStateChanged(user => {
-            const loader = document.getElementById('loader');
-            loader.style.width = "40%";
-            
             if (user) {
-                // Check if user exists in Database, if not, create it
-                db.ref('users/' + user.uid).once('value', snap => {
-                    if (!snap.exists()) {
-                        // This handles the first-time setup to prevent undefined errors
-                        db.ref('users/' + user.uid).set({
-                            uid: user.uid,
-                            name: user.displayName || "New Creator",
-                            email: user.email,
-                            shopName: "Studio_" + Math.floor(1000 + Math.random() * 9000),
-                            pic: "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                        });
-                    }
-                    document.getElementById('auth-section').classList.add('hidden');
-                    document.getElementById('app-section').classList.remove('hidden');
-                    loadUserData(user.uid);
-                });
+                document.getElementById('auth-section').classList.add('hidden');
+                document.getElementById('app-section').classList.remove('hidden');
             } else {
                 document.getElementById('auth-section').classList.remove('hidden');
                 document.getElementById('app-section').classList.add('hidden');
             }
-            loader.style.width = "100%";
-            setTimeout(() => { loader.style.width = "0%"; }, 500);
         });
 
-        // --- Form Switcher ---
-        function showAuth(type) {
-            ["login-form", "register-form", "reset-form"].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
-            });
-            document.getElementById(type + '-form').classList.remove('hidden');
-        }
+        // --- Logic: Media Upload ---
+        function uploadMedia(input) {
+            const file = input.files[0];
+            if(!file) return;
+            
+            const bar = document.getElementById('progress-bar');
+            bar.style.width = "20%";
+            
+            const storageRef = storage.ref('blog_media/' + Date.now() + "_" + file.name);
+            const uploadTask = storageRef.put(file);
 
-        // --- Handle Registration ---
-        function handleRegister() {
-            const name = document.getElementById('reg-name').value.trim();
-            const email = document.getElementById('reg-email').value.trim();
-            const pass = document.getElementById('reg-pass').value.trim();
-
-            if(!name || !email || !pass) return alert("Please fill all fields!");
-            if(pass.length < 6) return alert("Password should be at least 6 characters!");
-
-            auth.createUserWithEmailAndPassword(email, pass)
-                .then(res => {
-                    // Immediate database entry after account creation
-                    return db.ref('users/' + res.user.uid).set({
-                        uid: res.user.uid,
-                        name: name,
-                        email: email,
-                        shopName: name.split(' ')[0] + "_Studio",
-                        pic: "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+            uploadTask.on('state_changed', 
+                (snap) => {
+                    let p = (snap.bytesTransferred / snap.totalBytes) * 100;
+                    bar.style.width = p + "%";
+                },
+                (err) => alert(err.message),
+                () => {
+                    uploadTask.snapshot.ref.getDownloadURL().then(url => {
+                        document.getElementById('p-url').value = url;
+                        bar.style.width = "0%";
+                        alert("Media Ready!");
                     });
-                })
-                .then(() => alert("Registration Successful! Welcome to Sainiwalaa."))
-                .catch(err => alert(err.message));
-        }
-
-        // --- Handle Login ---
-        function handleLogin() {
-            const email = document.getElementById('login-email').value.trim();
-            const pass = document.getElementById('login-pass').value.trim();
-            if(!email || !pass) return alert("Enter credentials!");
-
-            auth.signInWithEmailAndPassword(email, pass)
-                .catch(err => alert("Login Failed: " + err.message));
-        }
-
-        // --- Handle Reset ---
-        function handleReset() {
-            const email = document.getElementById('reset-email').value.trim();
-            if(!email) return alert("Enter your email first!");
-            auth.sendPasswordResetEmail(email)
-                .then(() => alert("Reset link sent! Please check your email inbox."))
-                .catch(err => alert(err.message));
-        }
-
-        // --- Handle Logout ---
-        function logout() {
-            if(confirm("Are you sure you want to logout?")) auth.signOut();
-        }
-
-        // --- Realtime Data Loading ---
-        function loadUserData(uid) {
-            db.ref('users/' + uid).on('value', snap => {
-                const data = snap.val();
-                if(data) {
-                    document.getElementById('display-name').innerText = data.name || "No Name";
-                    document.getElementById('display-email').innerText = data.email || "No Email";
-                    document.getElementById('display-pic').src = data.pic || "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-                    document.getElementById('display-shop').innerText = (data.shopName || "STUDIO").toUpperCase();
-                    document.getElementById('info-shop').innerText = data.shopName || "Not Set";
-                    document.getElementById('display-uid').innerText = data.uid;
                 }
+            );
+        }
+
+        // --- Action: Publish to Firebase (Feed) ---
+        function publishPost() {
+            const name = document.getElementById('p-name').value;
+            const url = document.getElementById('p-url').value;
+            const price = document.getElementById('p-price').value;
+            const plat = document.getElementById('p-platform').value;
+            const link = document.getElementById('p-link').value;
+
+            if(!name || !url || !price) return alert("Please fill important fields!");
+
+            const postId = db.ref('posts').push().key;
+            const postData = {
+                postId: postId,
+                uid: auth.currentUser.uid,
+                productName: name,
+                mediaUrl: url,
+                description: document.getElementById('p-desc').value,
+                price: price,
+                platform: plat,
+                buyLink: link,
+                timestamp: Date.now()
+            };
+
+            db.ref('posts/' + postId).set(postData).then(() => {
+                alert("🚀 Post Published to Feed!");
+                // Clear Form
+                document.getElementById('p-name').value = "";
+                document.getElementById('p-url').value = "";
             });
         }
+
+        function login() {
+            const e = document.getElementById('email').value;
+            const p = document.getElementById('pass').value;
+            auth.signInWithEmailAndPassword(e, p);
+        }
+
+        function logout() { auth.signOut(); }
     </script>
 </body>
 </html>
