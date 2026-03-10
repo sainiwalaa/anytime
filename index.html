@@ -1,178 +1,218 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-<meta charset="UTF-8">
-<title>Sainiwalaa Creator</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body{margin:0;font-family:Arial;background:#fafafa}
-.header{background:white;padding:15px;display:flex;justify-content:space-between;border-bottom:1px solid #ddd}
-.container{max-width:700px;margin:auto;background:white;padding:15px}
-.profile{padding:20px;text-align:center}
-.avatar{width:90px;height:90px;border-radius:50%;object-fit:cover}
-button,input,select,textarea{padding:8px;margin:5px;border:1px solid #ccc;border-radius:6px;width:100%}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:20px}
-.post{height:150px;background-size:cover;background-position:center;position:relative}
-.post-overlay{position:absolute;bottom:0;background:rgba(0,0,0,0.5);color:white;width:100%;font-size:12px;padding:2px;text-align:center}
-.info{font-size:12px;color:#777;margin-top:10px}
-.form-section{margin-top:20px;background:#f9f9f9;padding:10px;border-radius:8px}
-</style>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+    <title>Sainiwalaa Creator Studio</title>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body { background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; }
+        
+        /* Instagram Style Grid */
+        .video-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+        .grid-item { aspect-ratio: 1/1; background: #121212; position: relative; overflow: hidden; cursor: pointer; }
+        .grid-item video, .grid-item img { width: 100%; height: 100%; object-fit: cover; }
+        .play-icon { position: absolute; top: 8px; right: 8px; font-size: 12px; text-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        
+        /* Glassmorphism Input */
+        .custom-input { background: #1a1a1a; border: 1px solid #333; padding: 12px; border-radius: 8px; width: 100%; color: #fff; margin-bottom: 10px; outline: none; transition: 0.3s; }
+        .custom-input:focus { border-color: #0095f6; }
+        
+        /* Navbar */
+        .nav-bottom { position: fixed; bottom: 0; width: 100%; background: #000; border-top: 1px solid #262626; display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; }
+        
+        /* Modal Style */
+        .modal { position: fixed; bottom: -100%; left: 0; width: 100%; height: 90%; background: #121212; z-index: 2000; transition: 0.4s cubic-bezier(0,0,0,1); border-radius: 20px 20px 0 0; padding: 20px; border-top: 1px solid #333; overflow-y: auto; }
+        .modal.active { bottom: 0; }
+        
+        .loading-bar { height: 3px; background: #0095f6; width: 0%; position: fixed; top: 0; left: 0; z-index: 9999; transition: 0.3s; }
+    </style>
 </head>
 <body>
 
-<div class="header">
-<b>Sainiwalaa</b>
-<div>
-<button onclick="login()">Login</button>
-<button onclick="logout()">Logout</button>
-</div>
-</div>
+    <div id="loader" class="loading-bar"></div>
 
-<div class="container">
-<div class="profile">
-<img id="avatar" class="avatar" src="https://via.placeholder.com/90">
-<h3 id="name">Creator</h3>
-<div class="info"><span id="uid"></span></div>
-</div>
+    <header class="flex justify-between items-center p-4 border-b border-zinc-900 sticky top-0 bg-black z-50">
+        <h1 class="text-xl font-bold tracking-tight italic">SAINIWALAA</h1>
+        <div id="auth-btns">
+            <button onclick="login()" id="loginBtn" class="bg-[#0095f6] px-4 py-1.5 rounded-lg text-sm font-bold">Login</button>
+            <button onclick="logout()" id="logoutBtn" class="hidden text-red-500 text-sm font-bold">Logout</button>
+        </div>
+    </header>
 
-<div class="form-section" id="postForm" style="display:none">
-<h4>Upload Product / Video</h4>
-<input type="text" id="shopName" placeholder="Shop Name" readonly>
-<input type="file" id="fileInput" accept="image/*,video/*">
-<input type="text" id="videoLink" placeholder="Or Embed Video Link">
-<input type="number" id="price" placeholder="Product Price">
-<select id="platform">
-  <option value="">Select Platform</option>
-  <option value="Amazon">Amazon</option>
-  <option value="Meesho">Meesho</option>
-  <option value="Other">Other</option>
-</select>
-<textarea id="description" placeholder="Description"></textarea>
-<input type="text" id="productLink" placeholder="Product Link">
-<label><input type="checkbox" id="influenceContact"> Influence Contact Yes/No</label>
-<button onclick="savePost()">Save Post</button>
-</div>
+    <div class="p-6 flex items-center gap-6">
+        <div class="relative p-1 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600">
+            <img id="userAvatar" class="w-20 h-20 rounded-full border-2 border-black object-cover" src="https://via.placeholder.com/150"/>
+        </div>
+        <div>
+            <h2 id="userName" class="text-lg font-bold">Guest Creator</h2>
+            <p id="userBio" class="text-xs text-zinc-400">Join to start sharing products</p>
+        </div>
+    </div>
 
-<h4>Public Feed</h4>
-<div class="grid" id="postGrid"></div>
-</div>
+    <div class="flex border-t border-zinc-900">
+        <div class="flex-1 text-center py-3 border-b border-white"><i class="fa-solid fa-table-cells text-xl"></i></div>
+        <div class="flex-1 text-center py-3 opacity-40"><i class="fa-solid fa-clapperboard text-xl"></i></div>
+        <div class="flex-1 text-center py-3 opacity-40"><i class="fa-regular fa-id-badge text-xl"></i></div>
+    </div>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <div id="postGrid" class="video-grid pb-20">
+        </div>
 
-<script>
-// Firebase Config
-const firebaseConfig = {
-  apiKey: "AIzaSyCm-5fJ49MxP0MFT8dDIkptue15x_GaaYc",
-  authDomain: "sainiwalaainfulencer.firebaseapp.com",
-  databaseURL: "https://sainiwalaainfulencer-default-rtdb.firebaseio.com",
-  projectId: "sainiwalaainfulencer",
-  storageBucket: "sainiwalaainfulencer.firebasestorage.app",
-  messagingSenderId: "116125275008",
-  appId: "1:116125275008:web:dc09ab0c6ce0317436e765"
-};
+    <div class="nav-bottom">
+        <i class="fa-solid fa-house text-xl"></i>
+        <i class="fa-solid fa-magnifying-glass text-xl opacity-50"></i>
+        <i onclick="openModal()" class="fa-regular fa-square-plus text-2xl cursor-pointer"></i>
+        <i class="fa-solid fa-heart text-xl opacity-50"></i>
+        <i class="fa-regular fa-circle-user text-xl opacity-50"></i>
+    </div>
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const storage = firebase.storage();
-const db = firebase.database();
+    <div id="uploadModal" class="modal">
+        <div class="flex justify-between items-center mb-6">
+            <span onclick="closeModal()" class="text-zinc-400">Cancel</span>
+            <h2 class="font-bold">New Post</h2>
+            <button onclick="savePost()" class="text-[#0095f6] font-bold">Share</button>
+        </div>
+        
+        <div class="space-y-4">
+            <div class="flex gap-4 items-start">
+                <div class="w-24 h-32 bg-zinc-800 rounded-lg flex items-center justify-center overflow-hidden border border-dashed border-zinc-600">
+                    <input type="file" id="fileInput" accept="image/*,video/*" class="hidden" onchange="previewFile(this)"/>
+                    <label for="fileInput" id="previewLabel" class="text-[10px] text-center cursor-pointer p-2">Select Video / Image</label>
+                </div>
+                <textarea id="description" class="flex-1 bg-transparent border-none outline-none text-sm h-32" placeholder="Write a caption..."></textarea>
+            </div>
 
-// Google Sheet API
-const SHEET_API = "https://script.google.com/macros/s/AKfycbxSg4X4HYjUoX9rfmnjU9lBUyv0aKtJB_pAp0K9z3A5NMHrhASg3aTNz-H3JnOa1twurA/exec";
+            <input type="text" id="shopName" class="custom-input" placeholder="Shop Name"/>
+            <input type="number" id="price" class="custom-input" placeholder="Price (₹)"/>
+            <select id="platform" class="custom-input">
+                <option value="Amazon">Amazon</option>
+                <option value="Meesho">Meesho</option>
+                <option value="Flipkart">Flipkart</option>
+                <option value="Other">Other</option>
+            </select>
+            <input type="text" id="productLink" class="custom-input" placeholder="Affiliate / Product Link"/>
+            <input type="hidden" id="videoLink"/>
+        </div>
+    </div>
 
-// Auth
-function login(){ auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-function logout(){ auth.signOut(); }
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-// Auth listener
-auth.onAuthStateChanged(user=>{
-  if(user){
-    document.getElementById("name").innerText=user.displayName;
-    document.getElementById("avatar").src=user.photoURL;
-    document.getElementById("uid").innerText="UID: "+user.uid;
-    document.getElementById("postForm").style.display="block";
-    loadShopName(user.uid);
-  } else {
-    document.getElementById("name").innerText="Creator";
-    document.getElementById("avatar").src="https://via.placeholder.com/90";
-    document.getElementById("uid").innerText="";
-    document.getElementById("postForm").style.display="none";
-  }
-});
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCm-5fJ49MxP0MFT8dDIkptue15x_GaaYc",
+            authDomain: "sainiwalaainfulencer.firebaseapp.com",
+            databaseURL: "https://sainiwalaainfulencer-default-rtdb.firebaseio.com",
+            projectId: "sainiwalaainfulencer",
+            storageBucket: "sainiwalaainfulencer.firebasestorage.app",
+            messagingSenderId: "116125275008",
+            appId: "1:116125275008:web:dc09ab0c6ce0317436e765"
+        };
 
-// Load shop name from Sheet
-function loadShopName(uid){
-  fetch(SHEET_API)
-  .then(r=>r.json())
-  .then(data=>{
-    const row = data.find(r=>r[0]==uid);
-    if(row) document.getElementById("shopName").value=row[1];
-  });
-}
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const storage = firebase.storage();
+        const db = firebase.database();
 
-// Upload + save
-document.getElementById("fileInput").addEventListener("change", function(){
-  const file=this.files[0]; const user=auth.currentUser;
-  if(!file||!user) return;
-  const ref=storage.ref("posts/"+user.uid+"/"+Date.now());
-  ref.put(file).then(s=>{
-    s.ref.getDownloadURL().then(url=>{
-      document.getElementById("videoLink").value=url;
-      alert("Video Uploaded Successfully!");
-    });
-  });
-});
+        // Login / Logout
+        function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+        function logout() { auth.signOut(); }
 
-// Save Post
-function savePost(){
-  const user=auth.currentUser;
-  if(!user) return alert("Login First!");
-  const post={
-    uid: user.uid,
-    shopName: document.getElementById("shopName").value,
-    videoLink: document.getElementById("videoLink").value,
-    price: document.getElementById("price").value,
-    platform: document.getElementById("platform").value,
-    description: document.getElementById("description").value,
-    productLink: document.getElementById("productLink").value,
-    influenceContact: document.getElementById("influenceContact").checked?"Yes":"No",
-    timestamp: new Date().toISOString()
-  };
-  
-  // Save to Firebase Realtime DB
-  const id=Date.now();
-  db.ref("posts/"+id).set(post);
+        auth.onAuthStateChanged(user => {
+            if(user) {
+                document.getElementById("userName").innerText = user.displayName;
+                document.getElementById("userAvatar").src = user.photoURL;
+                document.getElementById("loginBtn").classList.add("hidden");
+                document.getElementById("logoutBtn").classList.remove("hidden");
+                document.getElementById("userBio").innerText = "Verified Creator ✅";
+            } else {
+                document.getElementById("userName").innerText = "Guest Creator";
+                document.getElementById("loginBtn").classList.remove("hidden");
+                document.getElementById("logoutBtn").classList.add("hidden");
+            }
+        });
 
-  // Optional: Save to Google Sheet API
-  fetch(SHEET_API+"?action=addPost",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(post)
-  });
+        // Modal Controls
+        function openModal() { if(!auth.currentUser) return alert("Please login first!"); document.getElementById("uploadModal").classList.add("active"); }
+        function closeModal() { document.getElementById("uploadModal").classList.remove("active"); }
 
-  alert("Post Saved Successfully!");
-  showPost(post);
-}
+        // File Preview & Upload
+        function previewFile(input) {
+            const file = input.files[0];
+            const ldr = document.getElementById("loader");
+            if(!file) return;
 
-// Show post in grid
-function showPost(post){
-  const grid=document.getElementById("postGrid");
-  const div=document.createElement("div"); div.className="post";
-  div.style.backgroundImage="url("+post.videoLink+")";
-  const overlay=document.createElement("div"); overlay.className="post-overlay";
-  overlay.innerText=post.shopName+" | ₹"+post.price;
-  div.appendChild(overlay);
-  grid.prepend(div);
-}
+            ldr.style.width = "30%";
+            const ref = storage.ref("posts/" + auth.currentUser.uid + "/" + Date.now() + "_" + file.name);
+            
+            ref.put(file).then(s => {
+                s.ref.getDownloadURL().then(url => {
+                    document.getElementById("videoLink").value = url;
+                    document.getElementById("previewLabel").innerHTML = "Ready to Share ✅";
+                    ldr.style.width = "100%";
+                    setTimeout(() => ldr.style.width = "0%", 1000);
+                });
+            });
+        }
 
-// Load all posts (public feed)
-db.ref("posts").on("value", snap=>{
-  const grid=document.getElementById("postGrid"); grid.innerHTML="";
-  snap.forEach(p=>showPost(p.val()));
-});
-</script>
+        // Save Post
+        function savePost() {
+            const videoUrl = document.getElementById("videoLink").value;
+            if(!videoUrl) return alert("Please wait for upload to finish!");
+
+            const postData = {
+                uid: auth.currentUser.uid,
+                creator: auth.currentUser.displayName,
+                shopName: document.getElementById("shopName").value,
+                videoLink: videoUrl,
+                price: document.getElementById("price").value,
+                platform: document.getElementById("platform").value,
+                description: document.getElementById("description").value,
+                productLink: document.getElementById("productLink").value,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            db.ref("posts").push(postData).then(() => {
+                alert("Shared Successfully!");
+                closeModal();
+                location.reload();
+            });
+        }
+
+        // Load Posts into Instagram Grid
+        db.ref("posts").orderByChild("timestamp").on("value", snap => {
+            const grid = document.getElementById("postGrid");
+            grid.innerHTML = "";
+            let posts = [];
+            snap.forEach(child => { posts.push(child.val()); });
+            posts.reverse().forEach(post => {
+                const item = document.createElement("div");
+                item.className = "grid-item";
+                
+                // Check if it's a video or image
+                const isVideo = post.videoLink.includes(".mp4") || post.videoLink.includes("video");
+                
+                if(isVideo) {
+                    item.innerHTML = `
+                        <video src="${post.videoLink}" muted loop onmouseover="this.play()" onmouseout="this.pause()"></video>
+                        <i class="fa-solid fa-play play-icon"></i>
+                    `;
+                } else {
+                    item.innerHTML = `<img src="${post.videoLink}"/>`;
+                }
+
+                item.onclick = () => {
+                    window.open(post.productLink, '_blank');
+                };
+                grid.appendChild(item);
+            });
+        });
+    </script>
 </body>
 </html>
